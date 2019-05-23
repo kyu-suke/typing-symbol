@@ -4,6 +4,7 @@ import Array exposing (Array)
 import Browser
 import Browser.Events exposing (onKeyDown)
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
 
@@ -23,13 +24,17 @@ main =
 
 
 type alias Model =
-    { board : Board
+    { char : Char
     }
 
 
-type alias Board =
-    Array Row
+type alias Char =
+    String
 
+type alias TypeSymbol =
+    String
+type alias DoneSymbol =
+    String
 
 type alias Row =
     Array Cell
@@ -54,8 +59,8 @@ type Direction
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { board =
-            Array.repeat 4 <| Array.repeat 4 <| Tile 2
+    ( { char =
+            "a"
       }
     , Cmd.none
     )
@@ -66,44 +71,25 @@ init _ =
 
 
 type Msg
-    = Change Direction
+    = Change String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Change direction ->
+        Change string ->
             let
-                position =
-                    case direction of
-                        Left ->
-                            ( 1, 0 )
-
-                        Right ->
-                            ( 1, 2 )
-
-                        Up ->
-                            ( 0, 1 )
-
-                        Down ->
-                            ( 2, 1 )
-
-                        Other ->
-                            ( 1, 1 )
+                position = string
             in
             ( { model
-                | board = setBoard position (Tile 4) model.board
+                | char = setChar position
               }
             , Cmd.none
             )
 
 
-setBoard : Position -> Cell -> Board -> Board
-setBoard ( i, j ) cell board =
-    Array.get i board
-        |> Maybe.map (\oldRow -> Array.set j cell oldRow)
-        |> Maybe.map (\newRow -> Array.set i newRow board)
-        |> Maybe.withDefault board
+setChar : String -> Char
+setChar char = char
 
 
 
@@ -114,15 +100,11 @@ view : Model -> Html Msg
 view model =
     div []
         [ h1 [] [ text "Hello" ]
-        , h2 [] [ text <| List.foldl (++) "" charSet ]
-        , viewBoard model.board
+        , span [id "pre"] [ text <| List.foldl (++) "" charSet ]
+        , span [id "af"] [ text <| List.foldl (++) "" charSet ]
+        , h1 [] [text model.char ]
         ]
 
-
-viewBoard : Board -> Html Msg
-viewBoard board =
-    div [] <|
-        Array.toList (Array.map viewRow board)
 
 
 viewRow : Row -> Html Msg
@@ -154,7 +136,7 @@ subscriptions model =
         ]
 
 
-keyDecoder : Decode.Decoder Direction
+keyDecoder : Decode.Decoder String
 keyDecoder =
     Decode.map toDirection (Decode.field "key" Decode.string)
 
@@ -163,21 +145,5 @@ charSet =
     [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
 
 
-toDirection : String -> Direction
-toDirection string =
-    Debug.log string <|
-        case string of
-            "ArrowLeft" ->
-                Left
-
-            "ArrowRight" ->
-                Right
-
-            "ArrowUp" ->
-                Up
-
-            "ArrowDown" ->
-                Down
-
-            _ ->
-                Other
+toDirection : String -> String
+toDirection string = string
