@@ -25,6 +25,7 @@ main =
 
 type alias Model =
     { char : Char
+    , targetChar : Char
     }
 
 
@@ -61,6 +62,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { char =
             "a"
+      , targetChar = "1234567890-"
       }
     , Cmd.none
     )
@@ -82,15 +84,28 @@ update msg model =
                 position = string
             in
             ( { model
-                | char = setChar position
+                | char = setChar model position
+                , targetChar = removeChar model position
               }
             , Cmd.none
             )
 
 
-setChar : String -> Char
-setChar char = char
+setChar : Model -> String -> Char
+setChar model addChar = 
+        let s = String.left 1 model.targetChar in
+        case s == addChar of
+          True -> model.char ++ addChar
+          _ -> model.char
 
+removeChar : Model -> String -> Char
+removeChar model addChar = 
+        let s = String.left 1 model.targetChar in
+        case s == addChar of
+          True -> case List.head <| String.split "" model.targetChar of
+            Just x -> String.join "" <| List.tail x
+            _ -> ""
+          _ -> model.targetChar
 
 
 -- VIEW
@@ -103,6 +118,7 @@ view model =
         , span [id "pre"] [ text <| List.foldl (++) "" charSet ]
         , span [id "af"] [ text <| List.foldl (++) "" charSet ]
         , h1 [] [text model.char ]
+        , h1 [] [text model.targetChar ]
         ]
 
 
