@@ -99,11 +99,11 @@ setChar model addChar =
           _ -> model.char
 
 removeChar : Model -> String -> Char
-removeChar model addChar = 
+removeChar model addChar =
         let s = String.left 1 model.targetChar in
         case s == addChar of
-          True -> case List.head <| String.split "" model.targetChar of
-            Just x -> String.join "" <| List.tail x
+          True -> case String.uncons model.targetChar of
+            Just (h,tl) -> tl
             _ -> ""
           _ -> model.targetChar
 
