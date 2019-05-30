@@ -7,6 +7,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Json.Decode as Decode
+import Random exposing (..)
 
 
 main : Program () Model Msg
@@ -32,10 +33,14 @@ type alias Model =
 type alias Char =
     String
 
+
 type alias TypeSymbol =
     String
+
+
 type alias DoneSymbol =
     String
+
 
 type alias Row =
     Array Cell
@@ -58,11 +63,15 @@ type Direction
     | Other
 
 
+charSet =
+    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { char =
             "a"
-      , targetChar = "1234567890-"
+      , targetChar = String.join "" charSet
       }
     , Cmd.none
     )
@@ -81,7 +90,8 @@ update msg model =
     case msg of
         Change string ->
             let
-                position = string
+                position =
+                    string
             in
             ( { model
                 | char = setChar model position
@@ -92,20 +102,41 @@ update msg model =
 
 
 setChar : Model -> String -> Char
-setChar model addChar = 
-        let s = String.left 1 model.targetChar in
-        case s == addChar of
-          True -> model.char ++ addChar
-          _ -> model.char
+setChar model addChar =
+    let
+        s =
+            String.left 1 model.targetChar
+    in
+    case s == addChar of
+        True ->
+            model.char ++ addChar
+
+        _ ->
+            model.char
+
 
 removeChar : Model -> String -> Char
 removeChar model addChar =
-        let s = String.left 1 model.targetChar in
-        case s == addChar of
-          True -> case String.uncons model.targetChar of
-            Just (h,tl) -> tl
-            _ -> ""
-          _ -> model.targetChar
+    let
+        s =
+            String.left 1 model.targetChar
+    in
+    case s == addChar of
+        True ->
+            case String.uncons model.targetChar of
+                Just ( h, tl ) ->
+                    tl
+
+                _ ->
+                    ""
+
+        _ ->
+            model.targetChar
+
+
+i =
+    Random.step (int 0 10) (initialSeed 2)
+
 
 
 -- VIEW
@@ -115,12 +146,12 @@ view : Model -> Html Msg
 view model =
     div []
         [ h1 [] [ text "Hello" ]
-        , span [id "pre"] [ text <| List.foldl (++) "" charSet ]
-        , span [id "af"] [ text <| List.foldl (++) "" charSet ]
-        , h1 [] [text model.char ]
-        , h1 [] [text model.targetChar ]
+        , h1 [] [ text <| String.fromInt <| Tuple.first i ]
+        , span [ id "pre" ] [ text <| List.foldl (++) "" charSet ]
+        , span [ id "af" ] [ text <| List.foldl (++) "" charSet ]
+        , h1 [] [ text model.char ]
+        , h1 [] [ text model.targetChar ]
         ]
-
 
 
 viewRow : Row -> Html Msg
@@ -157,9 +188,6 @@ keyDecoder =
     Decode.map toDirection (Decode.field "key" Decode.string)
 
 
-charSet =
-    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
-
-
 toDirection : String -> String
-toDirection string = string
+toDirection string =
+    string
