@@ -71,7 +71,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { char =
             "a"
-      , targetChar = String.join "" charSet
+      , targetChar = String.join "" <| charSet ++ charSet ++ charSet ++ charSet
       }
     , Cmd.none
     )
@@ -144,13 +144,16 @@ i =
 
 view : Model -> Html Msg
 view model =
-    div []
+    div
+        [ style "width" "100%"
+        , style "overflow" "hidden"
+        ]
         [ h1 [] [ text "Hello" ]
         , h1 [] [ text <| String.fromInt <| Tuple.first i ]
         , span [ id "pre" ] [ text <| List.foldl (++) "" charSet ]
         , span [ id "af" ] [ text <| List.foldl (++) "" charSet ]
         , h1 [] [ text model.char ]
-        , h1 [] [ text model.targetChar ]
+        , h1 [ style "width" "500%" ] [ text model.targetChar ]
         ]
 
 
