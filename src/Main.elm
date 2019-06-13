@@ -5,9 +5,11 @@ import Browser
 import Browser.Events exposing (onKeyDown)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (..)
 import Json.Decode as Decode
 import Random exposing (..)
+import Time exposing (..)
+import Url exposing (..)
 
 
 main : Program () Model Msg
@@ -25,53 +27,28 @@ main =
 
 
 type alias Model =
-    { char : Char
-    , targetChar : Char
+    { targetChar : String
+    , spend : Float
+    , charLength : Int
+    , configShow : String
+    , runningShow : String
+    , resultShow : String
     }
 
 
-type alias Char =
-    String
-
-
-type alias TypeSymbol =
-    String
-
-
-type alias DoneSymbol =
-    String
-
-
-type alias Row =
-    Array Cell
-
-
-type Cell
-    = Tile Int
-    | Empty
-
-
-type alias Position =
-    ( Int, Int )
-
-
-type Direction
-    = Left
-    | Right
-    | Up
-    | Down
-    | Other
-
-
 charSet =
-    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+    Array.fromList
+        [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { char =
-            "a"
-      , targetChar = String.join "" <| charSet ++ charSet ++ charSet ++ charSet
+    ( { targetChar = ""
+      , spend = 0
+      , charLength = 20
+      , configShow = "show"
+      , runningShow = "hide"
+      , resultShow = "hide"
       }
     , Cmd.none
     )
@@ -83,6 +60,11 @@ init _ =
 
 type Msg
     = Change String
+    | SetChar Int
+    | Spend Time.Posix
+    | SetCharLength String
+    | Start
+    | End
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -93,29 +75,61 @@ update msg model =
                 position =
                     string
             in
-            ( { model
-                | char = setChar model position
-                , targetChar = removeChar model position
-              }
-            , Cmd.none
-            )
+            update End
+                { model
+                    | targetChar = removeChar model position
+                }
+
+        SetChar newFace ->
+            if String.length model.targetChar == model.charLength then
+                ( model, Cmd.none )
+
+            else
+                let
+                    str =
+                        Array.get newFace charSet
+                in
+                case str of
+                    Just s ->
+                        ( { model | targetChar = model.targetChar ++ s }, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+
+                    _ ->
+                        ( model, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+
+        Spend _ ->
+            if model.runningShow == "show" then
+                ( { model | spend = model.spend + 1 }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
+        SetCharLength cl ->
+            case String.toInt cl of
+                Just i ->
+                    if i < 1 then
+                        ( model, Cmd.none )
+
+                    else if i > 9999 then
+                        ( model, Cmd.none )
+
+                    else
+                        ( { model | charLength = i }, Cmd.none )
+
+                Nothing ->
+                    ( model, Cmd.none )
+
+        Start ->
+            ( { model | configShow = "hide", runningShow = "show" }, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+
+        End ->
+            if String.length model.targetChar <= 0 && model.runningShow == "show" then
+                ( { model | runningShow = "hide", resultShow = "show" }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
 
 
-setChar : Model -> String -> Char
-setChar model addChar =
-    let
-        s =
-            String.left 1 model.targetChar
-    in
-    case s == addChar of
-        True ->
-            model.char ++ addChar
-
-        _ ->
-            model.char
-
-
-removeChar : Model -> String -> Char
+removeChar : Model -> String -> String
 removeChar model addChar =
     let
         s =
@@ -134,10 +148,6 @@ removeChar model addChar =
             model.targetChar
 
 
-i =
-    Random.step (int 0 10) (initialSeed 2)
-
-
 
 -- VIEW
 
@@ -145,34 +155,29 @@ i =
 view : Model -> Html Msg
 view model =
     div
-        [ style "width" "100%"
-        , style "overflow" "hidden"
+        [ class "content" ]
+        [ div [ class "inner", class model.configShow ]
+            [ h1 [] [ text "set char length" ]
+            , input [ class "char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
+            , input [ class "nes-btn", type_ "button", value "Go!", onClick Start ] []
+            ]
+        , div [ class "inner", class model.runningShow ]
+            [ h1 [] [ text "<C-r> 3fd zfj" ]
+            , span [ class "target-char" ] [ text model.targetChar ]
+            , h1 [] [ text (timeStringFromMs model.spend) ]
+            ]
+        , div [ class "inner", class model.resultShow ]
+            [ h1 [] [ text "<C-r> 3fd zfj" ]
+            , span [ class "target-char" ] [ text "the end." ]
+            , h1 [] [ text (timeStringFromMs model.spend) ]
+            , a [ target "_blank", href <| makeShareUrl model ] [ i [ class "nes-icon twitter is-large" ] [] ]
+            ]
         ]
-        [ h1 [] [ text "Hello" ]
-        , h1 [] [ text <| String.fromInt <| Tuple.first i ]
-        , span [ id "pre" ] [ text <| List.foldl (++) "" charSet ]
-        , span [ id "af" ] [ text <| List.foldl (++) "" charSet ]
-        , h1 [] [ text model.char ]
-        , h1 [ style "width" "500%" ] [ text model.targetChar ]
-        ]
 
 
-viewRow : Row -> Html Msg
-viewRow row =
-    div [] <|
-        Array.toList (Array.map viewCell row)
-
-
-viewCell : Cell -> Html Msg
-viewCell cell =
-    case cell of
-        Tile number ->
-            span []
-                [ text (String.fromInt number)
-                ]
-
-        Empty ->
-            span [] []
+makeShareUrl : Model -> String
+makeShareUrl model =
+    "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | hoge")
 
 
 
@@ -182,15 +187,39 @@ viewCell cell =
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ onKeyDown (Decode.map Change keyDecoder)
+        [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
+        , Time.every 1 Spend
         ]
 
 
-keyDecoder : Decode.Decoder String
-keyDecoder =
-    Decode.map toDirection (Decode.field "key" Decode.string)
+timeStringFromMs : Float -> String
+timeStringFromMs ms =
+    let
+        centiSeconds =
+            truncate <| toFloat <| remainderBy 100 <| round (ms / 10)
 
+        seconds =
+            truncate (ms / 1000)
 
-toDirection : String -> String
-toDirection string =
-    string
+        minutes =
+            seconds // 60
+
+        hours =
+            minutes // 60
+
+        secondsMod =
+            remainderBy 60 seconds
+
+        minutesMod =
+            minutes
+
+        centiString =
+            centiSeconds |> String.fromInt |> String.padLeft 2 '0'
+
+        secondsString =
+            secondsMod |> String.fromInt |> String.padLeft 2 '0'
+
+        minutesString =
+            minutesMod |> String.fromInt |> String.padLeft 2 '0'
+    in
+    minutesString ++ ":" ++ secondsString ++ "." ++ centiString
