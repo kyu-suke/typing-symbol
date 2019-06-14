@@ -167,7 +167,7 @@ view model =
             -- , span [ class "target-char" ] [ text model.targetChar ]
             -- , input [ class "target-char", value model.targetChar, (property "selectionStart" (Json.Encode.int 0))] []
             , input [ class "ghost char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent"] []
-            , input [ class "char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" ""] []
+            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" ""] []
             , h1 [] [ text (timeStringFromMs model.spend) ]
             ]
         , div [ class "inner", class model.resultShow ]

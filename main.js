@@ -6399,7 +6399,7 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$input,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('char-length nes-input is-dark'),
+								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
 								elm$html$Html$Attributes$value(model.targetChar),
 								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
 								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
