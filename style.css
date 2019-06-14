@@ -4,6 +4,7 @@ body {
 	background: black;
 	color: white;
 	white-space: nowrap;
+	overflow: hidden;
 }
 
 .content {
@@ -54,4 +55,13 @@ body {
 i {
 	-webkit-transform: none;
 	transform: none;
+}
+
+.ghost.char-length.nes-input.is-dark {
+	caret-color: transparent;
+	position: absolute;
+	width: 1000%;
+	left: 0;
+	opacity: 0;
+	z-index: 999;
 }

@@ -6241,6 +6241,14 @@ var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var elm$html$Html$Attributes$attribute = elm$virtual_dom$VirtualDom$attribute;
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -6259,6 +6267,8 @@ var elm$html$Html$Attributes$href = function (url) {
 var elm$html$Html$Attributes$max = elm$html$Html$Attributes$stringProperty('max');
 var elm$html$Html$Attributes$min = elm$html$Html$Attributes$stringProperty('min');
 var elm$html$Html$Attributes$placeholder = elm$html$Html$Attributes$stringProperty('placeholder');
+var elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var elm$html$Html$Attributes$style = elm$virtual_dom$VirtualDom$style;
 var elm$html$Html$Attributes$target = elm$html$Html$Attributes$stringProperty('target');
 var elm$html$Html$Attributes$type_ = elm$html$Html$Attributes$stringProperty('type');
 var elm$html$Html$Attributes$value = elm$html$Html$Attributes$stringProperty('value');
@@ -6377,15 +6387,24 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$text('<C-r> 3fd zfj')
 							])),
 						A2(
-						elm$html$Html$span,
+						elm$html$Html$input,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('target-char')
+								elm$html$Html$Attributes$class('ghost char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.targetChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent')
 							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$input,
 						_List_fromArray(
 							[
-								elm$html$Html$text(model.targetChar)
-							])),
+								elm$html$Html$Attributes$class('char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.targetChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
+								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
+							]),
+						_List_Nil),
 						A2(
 						elm$html$Html$h1,
 						_List_Nil,

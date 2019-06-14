@@ -1,0 +1,112 @@
+<canvas id="hoge" width="900" height="200" style="background:red"></canvas>
+<br>
+<input type="button" value="eat" onClick="set()">
+
+<script>
+
+var canvas = document.getElementById('hoge');
+var ctx = canvas.getContext('2d');
+ctx.beginPath();
+ctx.arc(100, 100, 50, 0.25 * Math.PI, 1.25 * Math.PI, false);
+ctx.fillStyle = "rgb(255, 255, 0)";
+ctx.fill();
+ctx.beginPath();
+ctx.arc(100, 100, 50, 0.75 * Math.PI, 1.75 * Math.PI, false);
+ctx.fill();
+ctx.beginPath();
+ctx.arc(100, 75, 10, 0, 2 * Math.PI, false);
+ctx.fillStyle = "rgb(0, 0, 0)";
+ctx.fill();
+
+var canvas = document.getElementById('hoge');
+var ctx = canvas.getContext('2d');
+ctx.beginPath();
+ctx.arc(100, 100, 50, 0.25 * Math.PI, 1.25 * Math.PI, false);
+ctx.fillStyle = "rgb(255, 255, 0)";
+ctx.fill();
+ctx.beginPath();
+ctx.arc(100, 100, 50, 0.75 * Math.PI, 1.75 * Math.PI, false);
+ctx.fill();
+ctx.beginPath();
+ctx.arc(100, 75, 10, 0, 2 * Math.PI, false);
+ctx.fillStyle = "rgb(0, 0, 0)";
+ctx.fill();
+
+// var ctx2 = canvas.getContext('2d');
+// ctx2.beginPath();
+// ctx2.arc(200, 100, 50, 0, Math.PI, false);
+// ctx2.fillStyle = "rgb(255, 255, 0)";
+// ctx2.fill();
+// ctx2.beginPath();
+// ctx2.arc(200, 100, 50, 1 * Math.PI, 2 * Math.PI, false);
+// ctx2.fill();
+// ctx2.beginPath();
+// ctx2.arc(200, 75, 10, 0, 2 * Math.PI, false);
+// ctx2.fillStyle = "rgb(0, 0, 0)";
+// ctx2.fill()
+
+
+
+
+ctx.font = 'italic 400 36px Unknown Font, sans-serif';
+
+['!', '"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-',
+'.', '/', '0', ':', ';', '<', '=', '>', '?', '@', '[', '\\', ']',
+'^', '_', '`', '{', '|', '}', '~',].forEach((c, k) => {
+  ctx.fillText(c, 120 + (k* 50), 115);
+})
+
+
+function render() {
+  var cs  = document.getElementById('hoge');
+  var ctx = cs.getContext('2d');
+  var w = cs.width;
+  var h = cs.height;
+  var x = 0;
+  ctx.clearRect(0, 0, w, h);
+
+  a1 = (0.25 - (i * 0.01)) * Math.PI
+  a2 = (1.25 - (i * 0.01)) * Math.PI
+  a3 = (0.75 + (i * 0.01)) * Math.PI
+  a4 = (1.75 + (i * 0.01)) * Math.PI
+  a5 = 100 + (i * 0.5)
+  a6 = 75 + (i * 0.5)
+
+  ctx.beginPath();
+  ctx.arc(100, 100, 50, a1, a2, false);
+  ctx.fillStyle = "rgb(255, 255, 0)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(100, 100, 50, a3, a4, false);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(a5, a6, 10, 0, 2 * Math.PI, false);
+  ctx.fillStyle = "rgb(0, 0, 0)";
+  ctx.fill();
+
+
+  i = i+d
+
+  if (i > 24) {
+    d = -1
+  }
+  if (i <= 0) {
+    d = 1
+    clearInterval(a)
+  }
+}
+
+var i = 0
+var d = 1
+var a
+function set() {
+  i = 0
+  d = 1
+  a = setInterval(render, 10)
+}
+
+
+
+
+
+</script>
