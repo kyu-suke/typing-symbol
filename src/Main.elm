@@ -7,10 +7,10 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Decode
+import Json.Encode
 import Random exposing (..)
 import Time exposing (..)
 import Url exposing (..)
-import Json.Encode
 
 
 main : Program () Model Msg
@@ -164,10 +164,11 @@ view model =
             ]
         , div [ class "inner", class model.runningShow ]
             [ h1 [] [ text "<C-r> 3fd zfj" ]
+
             -- , span [ class "target-char" ] [ text model.targetChar ]
             -- , input [ class "target-char", value model.targetChar, (property "selectionStart" (Json.Encode.int 0))] []
-            , input [ class "ghost char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent"] []
-            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" ""] []
+            , input [ class "ghost char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent" ] []
+            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text (timeStringFromMs model.spend) ]
             ]
         , div [ class "inner", class model.resultShow ]
@@ -181,7 +182,7 @@ view model =
 
 makeShareUrl : Model -> String
 makeShareUrl model =
-    "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | hoge")
+    "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | https://qsk.netlify.com/")
 
 
 
