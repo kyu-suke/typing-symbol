@@ -29,27 +29,42 @@ main =
 
 type alias Model =
     { targetChar : String
+    , charSet : Array.Array String
     , spend : Float
     , charLength : Int
     , configShow : String
     , runningShow : String
     , resultShow : String
+    , isNum : Bool
+    , isAlpha : Bool
     }
 
 
-charSet =
-    Array.fromList
-        [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+
+-- charSet =
+--     Array.fromList
+--         [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+
+
+numSet =
+    [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+
+
+alphaSet =
+    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { targetChar = ""
+      , charSet = Array.fromList <| numSet ++ alphaSet
       , spend = 0
       , charLength = 20
       , configShow = "show"
       , runningShow = "hide"
       , resultShow = "hide"
+      , isNum = True
+      , isAlpha = True
       }
     , Cmd.none
     )
@@ -61,9 +76,12 @@ init _ =
 
 type Msg
     = Change String
+    | ChangeCharSet
     | SetChar Int
     | Spend Time.Posix
     | SetCharLength String
+    | CheckIsNum Bool
+    | CheckIsAlpha Bool
     | Start
     | End
 
@@ -81,6 +99,25 @@ update msg model =
                     | targetChar = removeChar model position
                 }
 
+        ChangeCharSet ->
+            let
+                charSet =
+                    Array.fromList <|
+                        (if model.isAlpha then
+                            alphaSet
+
+                         else
+                            []
+                        )
+                            ++ (if model.isNum then
+                                    numSet
+
+                                else
+                                    []
+                               )
+            in
+            ( { model | charSet = charSet }, Cmd.none )
+
         SetChar newFace ->
             if String.length model.targetChar == model.charLength then
                 ( model, Cmd.none )
@@ -88,14 +125,20 @@ update msg model =
             else
                 let
                     str =
-                        Array.get newFace charSet
+                        Array.get newFace model.charSet
+
+                    _ =
+                        Debug.log "modelをprintして、返り値はmodel" model.charSet
+
+                    _ =
+                        Debug.log "modelをprintして、返り値はmodel" str
                 in
                 case str of
                     Just s ->
-                        ( { model | targetChar = model.targetChar ++ s }, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+                        ( { model | targetChar = model.targetChar ++ s }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
                     _ ->
-                        ( model, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+                        ( model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
         Spend _ ->
             if model.runningShow == "show" then
@@ -119,8 +162,14 @@ update msg model =
                 Nothing ->
                     ( model, Cmd.none )
 
+        CheckIsNum b ->
+            update ChangeCharSet { model | isNum = b }
+
+        CheckIsAlpha b ->
+            update ChangeCharSet { model | isAlpha = b }
+
         Start ->
-            ( { model | configShow = "hide", runningShow = "show" }, Random.generate SetChar (Random.int 0 <| Array.length charSet) )
+            ( { model | configShow = "hide", runningShow = "show" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
         End ->
             if String.length model.targetChar <= 0 && model.runningShow == "show" then
@@ -161,6 +210,16 @@ view model =
             [ h1 [] [ text "set char length" ]
             , input [ class "char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
             , input [ class "nes-btn", type_ "button", value "Go!", onClick Start ] []
+            , div [ style "display" "block" ]
+                [ label []
+                    [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isNum, onCheck CheckIsNum ] []
+                    , span [] [ text "Num " ]
+                    ]
+                , label []
+                    [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isAlpha, onCheck CheckIsAlpha ] []
+                    , span [] [ text " Alpha" ]
+                    ]
+                ]
             ]
         , div [ class "inner", class model.runningShow ]
             [ h1 [] [ text "<C-r> 3fd zfj" ]
