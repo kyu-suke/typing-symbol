@@ -5840,7 +5840,7 @@ var author$project$Main$subscriptions = function (model) {
 					elm$json$Json$Decode$map,
 					author$project$Main$Change,
 					A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))),
-				A2(elm$time$Time$every, 1, author$project$Main$Spend)
+				A2(elm$time$Time$every, 10, author$project$Main$Spend)
 			]));
 };
 var author$project$Main$End = {$: 'End'};
@@ -6205,7 +6205,7 @@ var elm$core$String$padLeft = F3(
 			string);
 	});
 var author$project$Main$timeStringFromMs = function (ms) {
-	var seconds = (ms / 1000) | 0;
+	var seconds = (ms / 100) | 0;
 	var secondsMod = seconds % 60;
 	var secondsString = A3(
 		elm$core$String$padLeft,
@@ -6220,7 +6220,7 @@ var author$project$Main$timeStringFromMs = function (ms) {
 		_Utils_chr('0'),
 		elm$core$String$fromInt(minutesMod));
 	var hours = (minutes / 60) | 0;
-	var centiSeconds = (elm$core$Basics$round(ms / 10) % 100) | 0;
+	var centiSeconds = (elm$core$Basics$round(ms) % 100) | 0;
 	var centiString = A3(
 		elm$core$String$padLeft,
 		2,

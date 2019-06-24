@@ -193,7 +193,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
-        , Time.every 1 Spend
+        , Time.every 10 Spend
         ]
 
 
@@ -201,10 +201,10 @@ timeStringFromMs : Float -> String
 timeStringFromMs ms =
     let
         centiSeconds =
-            truncate <| toFloat <| remainderBy 100 <| round (ms / 10)
+            truncate <| toFloat <| remainderBy 100 <| round ms
 
         seconds =
-            truncate (ms / 1000)
+            truncate (ms / 100)
 
         minutes =
             seconds // 60
