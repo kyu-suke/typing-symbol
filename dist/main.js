@@ -6207,12 +6207,14 @@ var author$project$Main$update = F2(
 								elm$random$Random$int,
 								0,
 								elm$core$Array$length(model.charSet))));
-				default:
+				case 'End':
 					return ((elm$core$String$length(model.targetChar) <= 0) && (model.runningShow === 'show')) ? _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{resultShow: 'show', runningShow: 'hide'}),
 						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				default:
+					return author$project$Main$init(_Utils_Tuple0);
 			}
 		}
 	});
@@ -6222,6 +6224,7 @@ var author$project$Main$CheckIsAlpha = function (a) {
 var author$project$Main$CheckIsNum = function (a) {
 	return {$: 'CheckIsNum', a: a};
 };
+var author$project$Main$Retry = {$: 'Retry'};
 var author$project$Main$SetCharLength = function (a) {
 	return {$: 'SetCharLength', a: a};
 };
@@ -6569,29 +6572,48 @@ var author$project$Main$view = function (model) {
 							])),
 						A2(
 						elm$html$Html$h1,
-						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('time')
+							]),
 						_List_fromArray(
 							[
 								elm$html$Html$text(
 								author$project$Main$timeStringFromMs(model.spend))
 							])),
 						A2(
-						elm$html$Html$a,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$target('_blank'),
-								elm$html$Html$Attributes$href(
-								author$project$Main$makeShareUrl(model))
-							]),
+						elm$html$Html$div,
+						_List_Nil,
 						_List_fromArray(
 							[
 								A2(
-								elm$html$Html$i,
+								elm$html$Html$input,
 								_List_fromArray(
 									[
-										elm$html$Html$Attributes$class('nes-icon twitter is-large')
+										elm$html$Html$Attributes$class('nes-btn retry'),
+										elm$html$Html$Attributes$type_('button'),
+										elm$html$Html$Attributes$value('retry'),
+										elm$html$Html$Events$onClick(author$project$Main$Retry)
 									]),
-								_List_Nil)
+								_List_Nil),
+								A2(
+								elm$html$Html$a,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$target('_blank'),
+										elm$html$Html$Attributes$href(
+										author$project$Main$makeShareUrl(model))
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$i,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$class('nes-icon twitter is-large')
+											]),
+										_List_Nil)
+									]))
 							]))
 					]))
 			]));

@@ -84,6 +84,7 @@ type Msg
     | CheckIsAlpha Bool
     | Start
     | End
+    | Retry
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -178,6 +179,9 @@ update msg model =
             else
                 ( model, Cmd.none )
 
+        Retry ->
+            init ()
+
 
 removeChar : Model -> String -> String
 removeChar model addChar =
@@ -233,8 +237,11 @@ view model =
         , div [ class "inner", class model.resultShow ]
             [ h1 [] [ text "<C-r> 3fd zfj" ]
             , span [ class "target-char" ] [ text "the end." ]
-            , h1 [] [ text (timeStringFromMs model.spend) ]
-            , a [ target "_blank", href <| makeShareUrl model ] [ i [ class "nes-icon twitter is-large" ] [] ]
+            , h1 [ class "time" ] [ text (timeStringFromMs model.spend) ]
+            , div []
+                [ input [ class "nes-btn retry", type_ "button", value "retry", onClick Retry ] []
+                , a [ target "_blank", href <| makeShareUrl model ] [ i [ class "nes-icon twitter is-large" ] [] ]
+                ]
             ]
         ]
 

@@ -78,3 +78,10 @@ i {
 	font-size: 50px;
 }
 
+.time {
+	margin: 15px;
+}
+.retry {
+	position: relative;
+	bottom: 25px;
+}
