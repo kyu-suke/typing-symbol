@@ -32,6 +32,8 @@ type alias Model =
     , charSet : Array.Array String
     , spend : Float
     , charLength : Int
+    , mode : String
+    , titleShow : String
     , configShow : String
     , runningShow : String
     , resultShow : String
@@ -60,7 +62,9 @@ init _ =
       , charSet = Array.fromList <| numSet ++ alphaSet
       , spend = 0
       , charLength = 20
-      , configShow = "show"
+      , mode = "single"
+      , titleShow = "show"
+      , configShow = "hide"
       , runningShow = "hide"
       , resultShow = "hide"
       , isNum = True
@@ -82,6 +86,9 @@ type Msg
     | SetCharLength String
     | CheckIsNum Bool
     | CheckIsAlpha Bool
+    | CheckSingleMode Bool
+    | CheckMultiMode Bool
+    | SelectMode String
     | Start
     | End
     | Retry
@@ -95,10 +102,14 @@ update msg model =
                 position =
                     string
             in
-            update End
-                { model
-                    | targetChar = removeChar model position
-                }
+            if model.titleShow == "show" && string == "Enter" then
+                update (SelectMode model.mode) model
+
+            else
+                update End
+                    { model
+                        | targetChar = removeChar model position
+                    }
 
         ChangeCharSet ->
             let
@@ -169,6 +180,15 @@ update msg model =
         CheckIsAlpha b ->
             update ChangeCharSet { model | isAlpha = b }
 
+        CheckSingleMode b ->
+            ( { model | mode = "single" }, Cmd.none )
+
+        CheckMultiMode b ->
+            ( { model | mode = "multi" }, Cmd.none )
+
+        SelectMode m ->
+            ( { model | titleShow = "hide", configShow = "show", mode = m }, Cmd.none )
+
         Start ->
             ( { model | configShow = "hide", runningShow = "show" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
@@ -210,7 +230,25 @@ view : Model -> Html Msg
 view model =
     div
         [ class "content" ]
-        [ div [ class "inner", class model.configShow ]
+        [ div [ class "inner", class model.titleShow ]
+            [ div [ class "title" ]
+                [ h1 []
+                    [ text "Typing Game" ]
+                , p []
+                    [ text "Press Enter Key" ]
+                , label
+                    [ class "modeLabel" ]
+                    [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "single"), onCheck CheckSingleMode ] []
+                    , span [] [ text "SINGLE" ]
+                    ]
+                , label
+                    [ class "modeLabel" ]
+                    [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "multi"), onCheck CheckMultiMode ] []
+                    , span [] [ text "MULTI\u{3000}" ]
+                    ]
+                ]
+            ]
+        , div [ class "inner", class model.configShow ]
             [ h1 [] [ text "set char length" ]
             , input [ class "char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
             , input [ class "nes-btn", type_ "button", value "Go!", onClick Start ] []

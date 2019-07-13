@@ -85,3 +85,24 @@ i {
 	position: relative;
 	bottom: 25px;
 }
+
+.modeLabel {
+	display: block;
+}
+
+.title .nes-checkbox.is-dark:checked+span::before {
+	box-shadow: none;
+	content: "*"
+}
+.title .nes-checkbox:checked+span::before {
+	box-shadow: none;
+}
+.title .nes-checkbox+span::before {
+	box-shadow: none;
+}
+
+.title .nes-checkbox.is-dark:checked:focus+span::before {
+	box-shadow: none;
+	content: "*"
+}
+

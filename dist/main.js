@@ -4932,13 +4932,15 @@ var author$project$Main$init = function (_n0) {
 			charLength: 20,
 			charSet: elm$core$Array$fromList(
 				_Utils_ap(author$project$Main$numSet, author$project$Main$alphaSet)),
-			configShow: 'show',
+			configShow: 'hide',
 			isAlpha: true,
 			isNum: true,
+			mode: 'single',
 			resultShow: 'hide',
 			runningShow: 'hide',
 			spend: 0,
-			targetChar: ''
+			targetChar: '',
+			titleShow: 'show'
 		},
 		elm$core$Platform$Cmd$none);
 };
@@ -5895,6 +5897,9 @@ var author$project$Main$subscriptions = function (model) {
 };
 var author$project$Main$ChangeCharSet = {$: 'ChangeCharSet'};
 var author$project$Main$End = {$: 'End'};
+var author$project$Main$SelectMode = function (a) {
+	return {$: 'SelectMode', a: a};
+};
 var author$project$Main$SetChar = function (a) {
 	return {$: 'SetChar', a: a};
 };
@@ -6102,15 +6107,23 @@ var author$project$Main$update = F2(
 				case 'Change':
 					var string = msg.a;
 					var position = string;
-					var $temp$msg = author$project$Main$End,
-						$temp$model = _Utils_update(
-						model,
-						{
-							targetChar: A2(author$project$Main$removeChar, model, position)
-						});
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
+					if ((model.titleShow === 'show') && (string === 'Enter')) {
+						var $temp$msg = author$project$Main$SelectMode(model.mode),
+							$temp$model = model;
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					} else {
+						var $temp$msg = author$project$Main$End,
+							$temp$model = _Utils_update(
+							model,
+							{
+								targetChar: A2(author$project$Main$removeChar, model, position)
+							});
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					}
 				case 'ChangeCharSet':
 					var charSet = elm$core$Array$fromList(
 						_Utils_ap(
@@ -6195,6 +6208,27 @@ var author$project$Main$update = F2(
 					msg = $temp$msg;
 					model = $temp$model;
 					continue update;
+				case 'CheckSingleMode':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{mode: 'single'}),
+						elm$core$Platform$Cmd$none);
+				case 'CheckMultiMode':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{mode: 'multi'}),
+						elm$core$Platform$Cmd$none);
+				case 'SelectMode':
+					var m = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{configShow: 'show', mode: m, titleShow: 'hide'}),
+						elm$core$Platform$Cmd$none);
 				case 'Start':
 					return _Utils_Tuple2(
 						_Utils_update(
@@ -6223,6 +6257,12 @@ var author$project$Main$CheckIsAlpha = function (a) {
 };
 var author$project$Main$CheckIsNum = function (a) {
 	return {$: 'CheckIsNum', a: a};
+};
+var author$project$Main$CheckMultiMode = function (a) {
+	return {$: 'CheckMultiMode', a: a};
+};
+var author$project$Main$CheckSingleMode = function (a) {
+	return {$: 'CheckSingleMode', a: a};
 };
 var author$project$Main$Retry = {$: 'Retry'};
 var author$project$Main$SetCharLength = function (a) {
@@ -6292,6 +6332,7 @@ var elm$html$Html$h1 = _VirtualDom_node('h1');
 var elm$html$Html$i = _VirtualDom_node('i');
 var elm$html$Html$input = _VirtualDom_node('input');
 var elm$html$Html$label = _VirtualDom_node('label');
+var elm$html$Html$p = _VirtualDom_node('p');
 var elm$html$Html$span = _VirtualDom_node('span');
 var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
@@ -6404,6 +6445,91 @@ var author$project$Main$view = function (model) {
 			]),
 		_List_fromArray(
 			[
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('inner'),
+						elm$html$Html$Attributes$class(model.titleShow)
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$div,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('title')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$h1,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Typing Game')
+									])),
+								A2(
+								elm$html$Html$p,
+								_List_Nil,
+								_List_fromArray(
+									[
+										elm$html$Html$text('Press Enter Key')
+									])),
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('modeLabel')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$input,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$type_('radio'),
+												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+												elm$html$Html$Attributes$checked(model.mode === 'single'),
+												elm$html$Html$Events$onCheck(author$project$Main$CheckSingleMode)
+											]),
+										_List_Nil),
+										A2(
+										elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('SINGLE')
+											]))
+									])),
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('modeLabel')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$input,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$type_('radio'),
+												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+												elm$html$Html$Attributes$checked(model.mode === 'multi'),
+												elm$html$Html$Events$onCheck(author$project$Main$CheckMultiMode)
+											]),
+										_List_Nil),
+										A2(
+										elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('MULTI\u3000')
+											]))
+									]))
+							]))
+					])),
 				A2(
 				elm$html$Html$div,
 				_List_fromArray(
