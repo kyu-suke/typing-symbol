@@ -6104,6 +6104,8 @@ var author$project$Main$update = F2(
 		update:
 		while (true) {
 			switch (msg.$) {
+				case 'Hoge':
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'Change':
 					var string = msg.a;
 					var position = string;
