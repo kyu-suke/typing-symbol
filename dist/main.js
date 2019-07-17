@@ -5895,7 +5895,6 @@ var author$project$Main$subscriptions = function (model) {
 				A2(elm$time$Time$every, 10, author$project$Main$Spend)
 			]));
 };
-var author$project$Main$ChangeCharSet = {$: 'ChangeCharSet'};
 var author$project$Main$End = {$: 'End'};
 var author$project$Main$SelectMode = function (a) {
 	return {$: 'SelectMode', a: a};
@@ -5920,6 +5919,33 @@ var author$project$Main$removeChar = F2(
 		} else {
 			return model.targetChar;
 		}
+	});
+var author$project$Single$alphaSet = _List_fromArray(
+	['!', '\"', '\\', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', '¥']);
+var author$project$Single$numSet = _List_fromArray(
+	['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
+var author$project$Single$changeCharSet = function (m) {
+	var charSet = elm$core$Array$fromList(
+		_Utils_ap(
+			m.isAlpha ? author$project$Single$alphaSet : _List_Nil,
+			m.isNum ? author$project$Single$numSet : _List_Nil));
+	return _Utils_update(
+		m,
+		{charSet: charSet});
+};
+var author$project$Single$checkIsAlpha = F2(
+	function (b, m) {
+		return author$project$Single$changeCharSet(
+			_Utils_update(
+				m,
+				{isAlpha: b}));
+	});
+var author$project$Single$checkIsNum = F2(
+	function (b, m) {
+		return author$project$Single$changeCharSet(
+			_Utils_update(
+				m,
+				{isNum: b}));
 	});
 var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
@@ -6194,22 +6220,14 @@ var author$project$Main$update = F2(
 					}
 				case 'CheckIsNum':
 					var b = msg.a;
-					var $temp$msg = author$project$Main$ChangeCharSet,
-						$temp$model = _Utils_update(
-						model,
-						{isNum: b});
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
+					return _Utils_Tuple2(
+						A2(author$project$Single$checkIsNum, b, model),
+						elm$core$Platform$Cmd$none);
 				case 'CheckIsAlpha':
 					var b = msg.a;
-					var $temp$msg = author$project$Main$ChangeCharSet,
-						$temp$model = _Utils_update(
-						model,
-						{isAlpha: b});
-					msg = $temp$msg;
-					model = $temp$model;
-					continue update;
+					return _Utils_Tuple2(
+						A2(author$project$Single$checkIsAlpha, b, model),
+						elm$core$Platform$Cmd$none);
 				case 'CheckSingleMode':
 					var b = msg.a;
 					return _Utils_Tuple2(

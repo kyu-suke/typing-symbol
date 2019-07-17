@@ -1,7 +1,5 @@
 module Main exposing (main)
 
--- import Single exposing (..)
-
 import Array exposing (Array)
 import Browser
 import Browser.Events exposing (onKeyDown)
@@ -10,7 +8,9 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Decode
 import Json.Encode
+import Model exposing (MainModel)
 import Random exposing (..)
+import Single exposing (..)
 import Time exposing (..)
 import Url exposing (..)
 
@@ -30,24 +30,7 @@ main =
 
 
 type alias Model =
-    { targetChar : String
-    , charSet : Array.Array String
-    , spend : Float
-    , charLength : Int
-    , mode : String
-    , titleShow : String
-    , configShow : String
-    , runningShow : String
-    , resultShow : String
-    , isNum : Bool
-    , isAlpha : Bool
-    }
-
-
-
--- charSet =
---     Array.fromList
---         [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+    Model.MainModel
 
 
 numSet =
@@ -184,10 +167,11 @@ update msg model =
                     ( model, Cmd.none )
 
         CheckIsNum b ->
-            update ChangeCharSet { model | isNum = b }
+            --update ChangeCharSet { model | isNum = b }
+            ( Single.checkIsNum b model, Cmd.none )
 
         CheckIsAlpha b ->
-            update ChangeCharSet { model | isAlpha = b }
+            ( Single.checkIsAlpha b model, Cmd.none )
 
         CheckSingleMode b ->
             ( { model | mode = "single" }, Cmd.none )
