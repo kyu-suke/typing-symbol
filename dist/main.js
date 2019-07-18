@@ -5989,11 +5989,30 @@ var elm$core$Array$get = F2(
 			A2(elm$core$Elm$JsArray$unsafeGet, elm$core$Array$bitMask & index, tail)) : elm$core$Maybe$Just(
 			A3(elm$core$Array$getHelp, startShift, index, tree)));
 	});
+var author$project$Single$setChar = F2(
+	function (n, m) {
+		if (_Utils_eq(
+			elm$core$String$length(m.targetChar),
+			m.charLength)) {
+			return m;
+		} else {
+			var str = A2(elm$core$Array$get, n, m.charSet);
+			if (str.$ === 'Just') {
+				var s = str.a;
+				return _Utils_update(
+					m,
+					{
+						targetChar: _Utils_ap(m.targetChar, s)
+					});
+			} else {
+				return m;
+			}
+		}
+	});
 var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
-var elm$core$Debug$log = _Debug_log;
 var elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -6152,34 +6171,20 @@ var author$project$Main$update = F2(
 						model = $temp$model;
 						continue update;
 					}
-				case 'ChangeCharSet':
-					var charSet = elm$core$Array$fromList(
-						_Utils_ap(
-							model.isAlpha ? author$project$Main$alphaSet : _List_Nil,
-							model.isNum ? author$project$Main$numSet : _List_Nil));
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{charSet: charSet}),
-						elm$core$Platform$Cmd$none);
 				case 'SetChar':
-					var newFace = msg.a;
+					var n = msg.a;
 					if (_Utils_eq(
 						elm$core$String$length(model.targetChar),
 						model.charLength)) {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						return _Utils_Tuple2(
+							A2(author$project$Single$setChar, n, model),
+							elm$core$Platform$Cmd$none);
 					} else {
-						var str = A2(elm$core$Array$get, newFace, model.charSet);
-						var _n1 = A2(elm$core$Debug$log, 'modelをprintして、返り値はmodel', model.charSet);
-						var _n2 = A2(elm$core$Debug$log, 'modelをprintして、返り値はmodel', str);
+						var str = A2(elm$core$Array$get, n, model.charSet);
 						if (str.$ === 'Just') {
 							var s = str.a;
 							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{
-										targetChar: _Utils_ap(model.targetChar, s)
-									}),
+								A2(author$project$Single$setChar, n, model),
 								A2(
 									elm$random$Random$generate,
 									author$project$Main$SetChar,
@@ -6207,9 +6212,9 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'SetCharLength':
 					var cl = msg.a;
-					var _n4 = elm$core$String$toInt(cl);
-					if (_n4.$ === 'Just') {
-						var i = _n4.a;
+					var _n2 = elm$core$String$toInt(cl);
+					if (_n2.$ === 'Just') {
+						var i = _n2.a;
 						return (i < 1) ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : ((i > 9999) ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : _Utils_Tuple2(
 							_Utils_update(
 								model,

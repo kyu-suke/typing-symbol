@@ -1,4 +1,4 @@
-module Single exposing (Model, alphaSet, changeCharSet, checkIsAlpha, checkIsNum, numSet)
+module Single exposing (Model, alphaSet, changeCharSet, checkIsAlpha, checkIsNum, numSet, setChar)
 
 -- import Single exposing (..)
 
@@ -14,6 +14,14 @@ import Model exposing (MainModel)
 import Random exposing (..)
 import Time exposing (..)
 import Url exposing (..)
+
+
+alphaSet =
+    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+
+
+numSet =
+    [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
 
 
 
@@ -55,12 +63,22 @@ changeCharSet m =
     { m | charSet = charSet }
 
 
-alphaSet =
-    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
+setChar : Int -> Model -> Model
+setChar n m =
+    if String.length m.targetChar == m.charLength then
+        m
 
+    else
+        let
+            str =
+                Array.get n m.charSet
+        in
+        case str of
+            Just s ->
+                { m | targetChar = m.targetChar ++ s }
 
-numSet =
-    [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
+            _ ->
+                m
 
 
 

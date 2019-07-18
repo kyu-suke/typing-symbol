@@ -72,7 +72,6 @@ type Msg
       -- single
     | CheckIsNum Bool
     | CheckIsAlpha Bool
-    | ChangeCharSet
     | SetChar Int
     | Spend Time.Posix
     | SetCharLength String
@@ -103,43 +102,18 @@ update msg model =
                         | targetChar = removeChar model position
                     }
 
-        ChangeCharSet ->
-            let
-                charSet =
-                    Array.fromList <|
-                        (if model.isAlpha then
-                            alphaSet
-
-                         else
-                            []
-                        )
-                            ++ (if model.isNum then
-                                    numSet
-
-                                else
-                                    []
-                               )
-            in
-            ( { model | charSet = charSet }, Cmd.none )
-
-        SetChar newFace ->
+        SetChar n ->
             if String.length model.targetChar == model.charLength then
-                ( model, Cmd.none )
+                ( Single.setChar n model, Cmd.none )
 
             else
                 let
                     str =
-                        Array.get newFace model.charSet
-
-                    _ =
-                        Debug.log "modelをprintして、返り値はmodel" model.charSet
-
-                    _ =
-                        Debug.log "modelをprintして、返り値はmodel" str
+                        Array.get n model.charSet
                 in
                 case str of
                     Just s ->
-                        ( { model | targetChar = model.targetChar ++ s }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+                        ( Single.setChar n model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
                     _ ->
                         ( model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
