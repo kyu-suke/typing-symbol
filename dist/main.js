@@ -5947,6 +5947,11 @@ var author$project$Single$checkIsNum = F2(
 				m,
 				{isNum: b}));
 	});
+var author$project$Single$end = function (m) {
+	return ((elm$core$String$length(m.targetChar) <= 0) && (m.runningShow === 'show')) ? _Utils_update(
+		m,
+		{resultShow: 'show', runningShow: 'hide'}) : m;
+};
 var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
 var elm$core$Bitwise$and = _Bitwise_and;
@@ -6009,6 +6014,28 @@ var author$project$Single$setChar = F2(
 			}
 		}
 	});
+var author$project$Single$setCharLength = F2(
+	function (s, m) {
+		var _n0 = elm$core$String$toInt(s);
+		if (_n0.$ === 'Just') {
+			var i = _n0.a;
+			return (i < 1) ? m : ((i > 9999) ? m : _Utils_update(
+				m,
+				{charLength: i}));
+		} else {
+			return m;
+		}
+	});
+var author$project$Single$spend = function (m) {
+	return (m.runningShow === 'show') ? _Utils_update(
+		m,
+		{spend: m.spend + 1}) : m;
+};
+var author$project$Single$start = function (m) {
+	return _Utils_update(
+		m,
+		{configShow: 'hide', runningShow: 'show'});
+};
 var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
@@ -6149,8 +6176,6 @@ var author$project$Main$update = F2(
 		update:
 		while (true) {
 			switch (msg.$) {
-				case 'Hoge':
-					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'Change':
 					var string = msg.a;
 					var position = string;
@@ -6171,6 +6196,37 @@ var author$project$Main$update = F2(
 						model = $temp$model;
 						continue update;
 					}
+				case 'CheckSingleMode':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{mode: 'single'}),
+						elm$core$Platform$Cmd$none);
+				case 'CheckMultiMode':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{mode: 'multi'}),
+						elm$core$Platform$Cmd$none);
+				case 'SelectMode':
+					var m = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{configShow: 'show', mode: m, titleShow: 'hide'}),
+						elm$core$Platform$Cmd$none);
+				case 'CheckIsNum':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						A2(author$project$Single$checkIsNum, b, model),
+						elm$core$Platform$Cmd$none);
+				case 'CheckIsAlpha':
+					var b = msg.a;
+					return _Utils_Tuple2(
+						A2(author$project$Single$checkIsAlpha, b, model),
+						elm$core$Platform$Cmd$none);
 				case 'SetChar':
 					var n = msg.a;
 					if (_Utils_eq(
@@ -6205,60 +6261,17 @@ var author$project$Main$update = F2(
 						}
 					}
 				case 'Spend':
-					return (model.runningShow === 'show') ? _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{spend: model.spend + 1}),
-						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					return _Utils_Tuple2(
+						author$project$Single$spend(model),
+						elm$core$Platform$Cmd$none);
 				case 'SetCharLength':
-					var cl = msg.a;
-					var _n2 = elm$core$String$toInt(cl);
-					if (_n2.$ === 'Just') {
-						var i = _n2.a;
-						return (i < 1) ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : ((i > 9999) ? _Utils_Tuple2(model, elm$core$Platform$Cmd$none) : _Utils_Tuple2(
-							_Utils_update(
-								model,
-								{charLength: i}),
-							elm$core$Platform$Cmd$none));
-					} else {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-					}
-				case 'CheckIsNum':
-					var b = msg.a;
+					var s = msg.a;
 					return _Utils_Tuple2(
-						A2(author$project$Single$checkIsNum, b, model),
-						elm$core$Platform$Cmd$none);
-				case 'CheckIsAlpha':
-					var b = msg.a;
-					return _Utils_Tuple2(
-						A2(author$project$Single$checkIsAlpha, b, model),
-						elm$core$Platform$Cmd$none);
-				case 'CheckSingleMode':
-					var b = msg.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{mode: 'single'}),
-						elm$core$Platform$Cmd$none);
-				case 'CheckMultiMode':
-					var b = msg.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{mode: 'multi'}),
-						elm$core$Platform$Cmd$none);
-				case 'SelectMode':
-					var m = msg.a;
-					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{configShow: 'show', mode: m, titleShow: 'hide'}),
+						A2(author$project$Single$setCharLength, s, model),
 						elm$core$Platform$Cmd$none);
 				case 'Start':
 					return _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{configShow: 'hide', runningShow: 'show'}),
+						author$project$Single$start(model),
 						A2(
 							elm$random$Random$generate,
 							author$project$Main$SetChar,
@@ -6267,13 +6280,13 @@ var author$project$Main$update = F2(
 								0,
 								elm$core$Array$length(model.charSet))));
 				case 'End':
-					return ((elm$core$String$length(model.targetChar) <= 0) && (model.runningShow === 'show')) ? _Utils_Tuple2(
-						_Utils_update(
-							model,
-							{resultShow: 'show', runningShow: 'hide'}),
-						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				default:
+					return _Utils_Tuple2(
+						author$project$Single$end(model),
+						elm$core$Platform$Cmd$none);
+				case 'Retry':
 					return author$project$Main$init(_Utils_Tuple0);
+				default:
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 			}
 		}
 	});

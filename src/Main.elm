@@ -85,9 +85,6 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        Hoge ->
-            ( model, Cmd.none )
-
         Change string ->
             let
                 position =
@@ -101,6 +98,21 @@ update msg model =
                     { model
                         | targetChar = removeChar model position
                     }
+
+        CheckSingleMode b ->
+            ( { model | mode = "single" }, Cmd.none )
+
+        CheckMultiMode b ->
+            ( { model | mode = "multi" }, Cmd.none )
+
+        SelectMode m ->
+            ( { model | titleShow = "hide", configShow = "show", mode = m }, Cmd.none )
+
+        CheckIsNum b ->
+            ( Single.checkIsNum b model, Cmd.none )
+
+        CheckIsAlpha b ->
+            ( Single.checkIsAlpha b model, Cmd.none )
 
         SetChar n ->
             if String.length model.targetChar == model.charLength then
@@ -119,55 +131,22 @@ update msg model =
                         ( model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
         Spend _ ->
-            if model.runningShow == "show" then
-                ( { model | spend = model.spend + 1 }, Cmd.none )
+            ( Single.spend model, Cmd.none )
 
-            else
-                ( model, Cmd.none )
-
-        SetCharLength cl ->
-            case String.toInt cl of
-                Just i ->
-                    if i < 1 then
-                        ( model, Cmd.none )
-
-                    else if i > 9999 then
-                        ( model, Cmd.none )
-
-                    else
-                        ( { model | charLength = i }, Cmd.none )
-
-                Nothing ->
-                    ( model, Cmd.none )
-
-        CheckIsNum b ->
-            --update ChangeCharSet { model | isNum = b }
-            ( Single.checkIsNum b model, Cmd.none )
-
-        CheckIsAlpha b ->
-            ( Single.checkIsAlpha b model, Cmd.none )
-
-        CheckSingleMode b ->
-            ( { model | mode = "single" }, Cmd.none )
-
-        CheckMultiMode b ->
-            ( { model | mode = "multi" }, Cmd.none )
-
-        SelectMode m ->
-            ( { model | titleShow = "hide", configShow = "show", mode = m }, Cmd.none )
+        SetCharLength s ->
+            ( Single.setCharLength s model, Cmd.none )
 
         Start ->
-            ( { model | configShow = "hide", runningShow = "show" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+            ( Single.start model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
         End ->
-            if String.length model.targetChar <= 0 && model.runningShow == "show" then
-                ( { model | runningShow = "hide", resultShow = "show" }, Cmd.none )
-
-            else
-                ( model, Cmd.none )
+            ( Single.end model, Cmd.none )
 
         Retry ->
             init ()
+
+        Hoge ->
+            ( model, Cmd.none )
 
 
 removeChar : Model -> String -> String
