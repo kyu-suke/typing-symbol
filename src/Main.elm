@@ -33,18 +33,10 @@ type alias Model =
     Model.MainModel
 
 
-numSet =
-    [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" ]
-
-
-alphaSet =
-    [ "!", "\"", "\\", "#", "$", "%", "&", "'", "(", ")", "*", "+", ",", "-", ".", "/", ":", ";", "<", "=", ">", "?", "@", "[", "]", "^", "_", "`", "{", "|", "}", "~", "¥" ]
-
-
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( { targetChar = ""
-      , charSet = Array.fromList <| numSet ++ alphaSet
+      , charSet = Array.fromList <| Single.numSet ++ Single.alphaSet
       , spend = 0
       , charLength = 20
       , mode = "single"
@@ -79,7 +71,11 @@ type Msg
     | End
     | Retry
       -- multi
-    | Hoge
+    | Matching
+    | Compete
+    | SendType
+    | ReceiveType
+    | Result
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -145,8 +141,16 @@ update msg model =
         Retry ->
             init ()
 
-        Hoge ->
-            ( model, Cmd.none )
+        Matching -> 
+                ( model, Cmd.none )
+        Compete -> 
+                ( model, Cmd.none )
+        SendType -> 
+                ( model, Cmd.none )
+        ReceiveType -> 
+                ( model, Cmd.none )
+        Result -> 
+                ( model, Cmd.none )
 
 
 removeChar : Model -> String -> String
