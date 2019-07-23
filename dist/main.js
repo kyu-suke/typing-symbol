@@ -4932,20 +4932,21 @@ var author$project$Main$init = function (_n0) {
 			charLength: 20,
 			charSet: elm$core$Array$fromList(
 				_Utils_ap(author$project$Main$numSet, author$project$Main$alphaSet)),
-			configShow: 'hide',
 			isAlpha: true,
 			isNum: true,
+			matchTicker: '',
 			mode: 'single',
-			resultShow: 'hide',
-			runningShow: 'hide',
 			spend: 0,
 			targetChar: '',
-			titleShow: 'show'
+			viewStatus: 'title'
 		},
 		elm$core$Platform$Cmd$none);
 };
 var author$project$Main$Change = function (a) {
 	return {$: 'Change', a: a};
+};
+var author$project$Main$NowMatching = function (a) {
+	return {$: 'NowMatching', a: a};
 };
 var author$project$Main$Spend = function (a) {
 	return {$: 'Spend', a: a};
@@ -5892,7 +5893,8 @@ var author$project$Main$subscriptions = function (model) {
 					elm$json$Json$Decode$map,
 					author$project$Main$Change,
 					A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))),
-				A2(elm$time$Time$every, 10, author$project$Main$Spend)
+				A2(elm$time$Time$every, 10, author$project$Main$Spend),
+				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching)
 			]));
 };
 var author$project$Main$End = {$: 'End'};
@@ -5948,9 +5950,9 @@ var author$project$Single$checkIsNum = F2(
 				{isNum: b}));
 	});
 var author$project$Single$end = function (m) {
-	return ((elm$core$String$length(m.targetChar) <= 0) && (m.runningShow === 'show')) ? _Utils_update(
+	return ((elm$core$String$length(m.targetChar) <= 0) && (m.viewStatus === 'running')) ? _Utils_update(
 		m,
-		{resultShow: 'show', runningShow: 'hide'}) : m;
+		{viewStatus: 'result'}) : m;
 };
 var elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
 var elm$core$Array$bitMask = 4294967295 >>> (32 - elm$core$Array$shiftStep);
@@ -6027,14 +6029,14 @@ var author$project$Single$setCharLength = F2(
 		}
 	});
 var author$project$Single$spend = function (m) {
-	return (m.runningShow === 'show') ? _Utils_update(
+	return (m.viewStatus === 'running') ? _Utils_update(
 		m,
 		{spend: m.spend + 1}) : m;
 };
 var author$project$Single$start = function (m) {
 	return _Utils_update(
 		m,
-		{configShow: 'hide', runningShow: 'show'});
+		{viewStatus: 'running'});
 };
 var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
@@ -6179,7 +6181,7 @@ var author$project$Main$update = F2(
 				case 'Change':
 					var string = msg.a;
 					var position = string;
-					if ((model.titleShow === 'show') && (string === 'Enter')) {
+					if ((model.viewStatus === 'title') && (string === 'Enter')) {
 						var $temp$msg = author$project$Main$SelectMode(model.mode),
 							$temp$model = model;
 						msg = $temp$msg;
@@ -6212,10 +6214,11 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none);
 				case 'SelectMode':
 					var m = msg.a;
+					var v = (m === 'multi') ? 'multi' : 'config';
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{configShow: 'show', mode: m, titleShow: 'hide'}),
+							{mode: m, viewStatus: v}),
 						elm$core$Platform$Cmd$none);
 				case 'CheckIsNum':
 					var b = msg.a;
@@ -6285,8 +6288,15 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none);
 				case 'Retry':
 					return author$project$Main$init(_Utils_Tuple0);
-				default:
+				case 'Hoge':
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				default:
+					var ticker = (model.matchTicker === '...') ? '' : (model.matchTicker + '.');
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{matchTicker: ticker}),
+						elm$core$Platform$Cmd$none);
 			}
 		}
 	});
@@ -6364,6 +6374,10 @@ var author$project$Main$makeShareUrl = function (model) {
 	return 'https://twitter.com/intent/tweet?text=' + elm$url$Url$percentEncode(
 		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://qsk.netlify.com/')));
 };
+var author$project$Main$toggleClass = F2(
+	function (status, className) {
+		return _Utils_eq(status, className) ? 'show' : 'hide';
+	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
@@ -6488,7 +6502,8 @@ var author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$class('inner'),
-						elm$html$Html$Attributes$class(model.titleShow)
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'title'))
 					]),
 				_List_fromArray(
 					[
@@ -6573,7 +6588,8 @@ var author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$class('inner'),
-						elm$html$Html$Attributes$class(model.configShow)
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'config'))
 					]),
 				_List_fromArray(
 					[
@@ -6669,7 +6685,8 @@ var author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$class('inner'),
-						elm$html$Html$Attributes$class(model.runningShow)
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'running'))
 					]),
 				_List_fromArray(
 					[
@@ -6713,7 +6730,8 @@ var author$project$Main$view = function (model) {
 				_List_fromArray(
 					[
 						elm$html$Html$Attributes$class('inner'),
-						elm$html$Html$Attributes$class(model.resultShow)
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'result'))
 					]),
 				_List_fromArray(
 					[
@@ -6778,6 +6796,27 @@ var author$project$Main$view = function (model) {
 											]),
 										_List_Nil)
 									]))
+							]))
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('inner'),
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'multi'))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h1,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('matchTicker')
+							]),
+						_List_fromArray(
+							[
+								elm$html$Html$text('Now Matching' + model.matchTicker)
 							]))
 					]))
 			]));

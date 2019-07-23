@@ -9,10 +9,8 @@ type alias MainModel =
     , spend : Float
     , charLength : Int
     , mode : String
-    , titleShow : String
-    , configShow : String
-    , runningShow : String
-    , resultShow : String
+    , viewStatus : String
     , isNum : Bool
     , isAlpha : Bool
+    , matchTicker : String
     }

@@ -106,3 +106,8 @@ i {
 	content: "*"
 }
 
+.matchTicker {
+	min-width: 400px;
+	max-width: 400px;
+	text-align: left;
+}

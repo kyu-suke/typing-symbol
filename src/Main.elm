@@ -48,12 +48,10 @@ init _ =
       , spend = 0
       , charLength = 20
       , mode = "single"
-      , titleShow = "show"
-      , configShow = "hide"
-      , runningShow = "hide"
-      , resultShow = "hide"
+      , viewStatus = "title"
       , isNum = True
       , isAlpha = True
+      , matchTicker = ""
       }
     , Cmd.none
     )
@@ -80,6 +78,7 @@ type Msg
     | Retry
       -- multi
     | Hoge
+    | NowMatching Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -90,7 +89,7 @@ update msg model =
                 position =
                     string
             in
-            if model.titleShow == "show" && string == "Enter" then
+            if model.viewStatus == "title" && string == "Enter" then
                 update (SelectMode model.mode) model
 
             else
@@ -106,7 +105,15 @@ update msg model =
             ( { model | mode = "multi" }, Cmd.none )
 
         SelectMode m ->
-            ( { model | titleShow = "hide", configShow = "show", mode = m }, Cmd.none )
+            let
+                v =
+                    if m == "multi" then
+                        "multi"
+
+                    else
+                        "config"
+            in
+            ( { model | viewStatus = v, mode = m }, Cmd.none )
 
         CheckIsNum b ->
             ( Single.checkIsNum b model, Cmd.none )
@@ -148,6 +155,17 @@ update msg model =
         Hoge ->
             ( model, Cmd.none )
 
+        NowMatching _ ->
+            let
+                ticker =
+                    if model.matchTicker == "..." then
+                        ""
+
+                    else
+                        model.matchTicker ++ "."
+            in
+            ( { model | matchTicker = ticker }, Cmd.none )
+
 
 removeChar : Model -> String -> String
 removeChar model addChar =
@@ -176,7 +194,8 @@ view : Model -> Html Msg
 view model =
     div
         [ class "content" ]
-        [ div [ class "inner", class model.titleShow ]
+        [ div
+            [ class "inner", class <| toggleClass model.viewStatus "title" ]
             [ div [ class "title" ]
                 [ h1 []
                     [ text "Typing Game" ]
@@ -194,7 +213,9 @@ view model =
                     ]
                 ]
             ]
-        , div [ class "inner", class model.configShow ]
+
+        -- single
+        , div [ class "inner", class <| toggleClass model.viewStatus "config" ]
             [ h1 [] [ text "set char length" ]
             , input [ class "char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
             , input [ class "nes-btn", type_ "button", value "Go!", onClick Start ] []
@@ -209,7 +230,7 @@ view model =
                     ]
                 ]
             ]
-        , div [ class "inner", class model.runningShow ]
+        , div [ class "inner", class <| toggleClass model.viewStatus "running" ]
             [ h1 [] [ text "<C-r> 3fd zfj" ]
 
             -- , span [ class "target-char" ] [ text model.targetChar ]
@@ -218,7 +239,7 @@ view model =
             , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text (timeStringFromMs model.spend) ]
             ]
-        , div [ class "inner", class model.resultShow ]
+        , div [ class "inner", class <| toggleClass model.viewStatus "result" ]
             [ h1 [] [ text "<C-r> 3fd zfj" ]
             , span [ class "target-char" ] [ text "the end." ]
             , h1 [ class "time" ] [ text (timeStringFromMs model.spend) ]
@@ -227,12 +248,26 @@ view model =
                 , a [ target "_blank", href <| makeShareUrl model ] [ i [ class "nes-icon twitter is-large" ] [] ]
                 ]
             ]
+
+        -- multi
+        , div [ class "inner", class <| toggleClass model.viewStatus "multi" ]
+            [ h1 [ class "matchTicker" ] [ text <| "Now Matching" ++ model.matchTicker ]
+            ]
         ]
 
 
 makeShareUrl : Model -> String
 makeShareUrl model =
     "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | https://qsk.netlify.com/")
+
+
+toggleClass : String -> String -> String
+toggleClass status className =
+    if status == className then
+        "show"
+
+    else
+        "hide"
 
 
 
@@ -244,6 +279,7 @@ subscriptions model =
     Sub.batch
         [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
         , Time.every 10 Spend
+        , Time.every 1000 NowMatching
         ]
 
 

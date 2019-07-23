@@ -83,7 +83,7 @@ setChar n m =
 
 spend : Model -> Model
 spend m =
-    if m.runningShow == "show" then
+    if m.viewStatus == "running" then
         { m | spend = m.spend + 1 }
 
     else
@@ -109,13 +109,13 @@ setCharLength s m =
 
 start : Model -> Model
 start m =
-    { m | configShow = "hide", runningShow = "show" }
+    { m | viewStatus = "running" }
 
 
 end : Model -> Model
 end m =
-    if String.length m.targetChar <= 0 && m.runningShow == "show" then
-        { m | runningShow = "hide", resultShow = "show" }
+    if String.length m.targetChar <= 0 && m.viewStatus == "running" then
+        { m | viewStatus = "result" }
 
     else
         m
