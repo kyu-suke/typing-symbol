@@ -4490,9 +4490,9 @@ var elm$core$Set$toList = function (_n0) {
 	var dict = _n0.a;
 	return elm$core$Dict$keys(dict);
 };
-var author$project$Main$alphaSet = _List_fromArray(
+var author$project$Single$alphaSet = _List_fromArray(
 	['!', '\"', '\\', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', '¥']);
-var author$project$Main$numSet = _List_fromArray(
+var author$project$Single$numSet = _List_fromArray(
 	['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
 var elm$core$Array$Array_elm_builtin = F4(
 	function (a, b, c, d) {
@@ -4931,7 +4931,7 @@ var author$project$Main$init = function (_n0) {
 		{
 			charLength: 20,
 			charSet: elm$core$Array$fromList(
-				_Utils_ap(author$project$Main$numSet, author$project$Main$alphaSet)),
+				_Utils_ap(author$project$Single$numSet, author$project$Single$alphaSet)),
 			isAlpha: true,
 			isNum: true,
 			matchTicker: '',
@@ -5922,10 +5922,6 @@ var author$project$Main$removeChar = F2(
 			return model.targetChar;
 		}
 	});
-var author$project$Single$alphaSet = _List_fromArray(
-	['!', '\"', '\\', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '=', '>', '?', '@', '[', ']', '^', '_', '`', '{', '|', '}', '~', '¥']);
-var author$project$Single$numSet = _List_fromArray(
-	['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']);
 var author$project$Single$changeCharSet = function (m) {
 	var charSet = elm$core$Array$fromList(
 		_Utils_ap(
@@ -6288,7 +6284,15 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none);
 				case 'Retry':
 					return author$project$Main$init(_Utils_Tuple0);
-				case 'Hoge':
+				case 'Matching':
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				case 'Compete':
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				case 'SendType':
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				case 'ReceiveType':
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				case 'Result':
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				default:
 					var ticker = (model.matchTicker === '...') ? '' : (model.matchTicker + '.');
