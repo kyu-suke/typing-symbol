@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Array exposing (Array)
 import Browser
@@ -23,6 +23,15 @@ main =
         , update = update
         , subscriptions = subscriptions
         }
+
+
+port paringRoom : () -> Cmd msg
+
+
+port sendMessage : String -> Cmd msg
+
+
+port receiveMessage : (String -> msg) -> Sub msg
 
 
 
@@ -69,12 +78,18 @@ type Msg
     | End
     | Retry
       -- multi
+      -- | Pairing
+    | SendMessage
+    | ReceiveMessage String
+    | InputMessage String
     | NowMatching Time.Posix
     | Matching
     | Compete
     | SendType
+    | Pairing
     | ReceiveType
     | Result
+    | MultiStart
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -109,7 +124,11 @@ update msg model =
                     else
                         "config"
             in
-            ( { model | viewStatus = v, mode = m }, Cmd.none )
+            if m == "multi" then
+                update Pairing { model | viewStatus = "multi", mode = m }
+
+            else
+                ( { model | viewStatus = "config", mode = m }, Cmd.none )
 
         CheckIsNum b ->
             ( Single.checkIsNum b model, Cmd.none )
@@ -148,6 +167,7 @@ update msg model =
         Retry ->
             init ()
 
+        -- multi
         Matching ->
             ( model, Cmd.none )
 
@@ -173,6 +193,27 @@ update msg model =
                         model.matchTicker ++ "."
             in
             ( { model | matchTicker = ticker }, Cmd.none )
+
+        Pairing ->
+            ( model, paringRoom () )
+
+        SendMessage ->
+            ( model, sendMessage "hogeohgoehohgoeho" )
+
+        MultiStart ->
+            ( { model | viewStatus = "buttle" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+
+        ReceiveMessage s ->
+            if s == "pairling" then
+                update MultiStart model
+
+            else
+                -- ( { model | receivedMessage = s }, Cmd.none )
+                ( model, Cmd.none )
+
+        InputMessage s ->
+            -- ( { model | inputMessage = s }, Cmd.none )
+            ( model, Cmd.none )
 
 
 removeChar : Model -> String -> String
@@ -261,6 +302,14 @@ view model =
         , div [ class "inner", class <| toggleClass model.viewStatus "multi" ]
             [ h1 [ class "matchTicker" ] [ text <| "Now Matching" ++ model.matchTicker ]
             ]
+        , div [ class "inner", class <| toggleClass model.viewStatus "buttle" ]
+            [ h1 [] [ text "You are vimmer, you are vimmer!" ]
+            , input [ class "ghost char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent" ] []
+            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
+            , h1 [] [ text (timeStringFromMs model.spend) ]
+            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
+            , h1 [] [ text (timeStringFromMs model.spend) ]
+            ]
         ]
 
 
@@ -288,6 +337,7 @@ subscriptions model =
         [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
         , Time.every 10 Spend
         , Time.every 1000 NowMatching
+        , receiveMessage ReceiveMessage
         ]
 
 

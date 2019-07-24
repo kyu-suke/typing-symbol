@@ -4948,9 +4948,14 @@ var author$project$Main$Change = function (a) {
 var author$project$Main$NowMatching = function (a) {
 	return {$: 'NowMatching', a: a};
 };
+var author$project$Main$ReceiveMessage = function (a) {
+	return {$: 'ReceiveMessage', a: a};
+};
 var author$project$Main$Spend = function (a) {
 	return {$: 'Spend', a: a};
 };
+var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Main$receiveMessage = _Platform_incomingPort('receiveMessage', elm$json$Json$Decode$string);
 var elm$browser$Browser$Events$Document = {$: 'Document'};
 var elm$browser$Browser$Events$MySub = F3(
 	function (a, b, c) {
@@ -5667,7 +5672,6 @@ var elm$browser$Browser$Events$on = F3(
 var elm$browser$Browser$Events$onKeyDown = A2(elm$browser$Browser$Events$on, elm$browser$Browser$Events$Document, 'keydown');
 var elm$core$Platform$Sub$batch = _Platform_batch;
 var elm$json$Json$Decode$field = _Json_decodeField;
-var elm$json$Json$Decode$string = _Json_decodeString;
 var elm$time$Time$Every = F2(
 	function (a, b) {
 		return {$: 'Every', a: a, b: b};
@@ -5894,16 +5898,25 @@ var author$project$Main$subscriptions = function (model) {
 					author$project$Main$Change,
 					A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))),
 				A2(elm$time$Time$every, 10, author$project$Main$Spend),
-				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching)
+				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching),
+				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage)
 			]));
 };
 var author$project$Main$End = {$: 'End'};
+var author$project$Main$MultiStart = {$: 'MultiStart'};
+var author$project$Main$Pairing = {$: 'Pairing'};
 var author$project$Main$SelectMode = function (a) {
 	return {$: 'SelectMode', a: a};
 };
 var author$project$Main$SetChar = function (a) {
 	return {$: 'SetChar', a: a};
 };
+var elm$json$Json$Encode$null = _Json_encodeNull;
+var author$project$Main$paringRoom = _Platform_outgoingPort(
+	'paringRoom',
+	function ($) {
+		return elm$json$Json$Encode$null;
+	});
 var author$project$Main$removeChar = F2(
 	function (model, addChar) {
 		var s = A2(elm$core$String$left, 1, model.targetChar);
@@ -5922,6 +5935,8 @@ var author$project$Main$removeChar = F2(
 			return model.targetChar;
 		}
 	});
+var elm$json$Json$Encode$string = _Json_wrap;
+var author$project$Main$sendMessage = _Platform_outgoingPort('sendMessage', elm$json$Json$Encode$string);
 var author$project$Single$changeCharSet = function (m) {
 	var charSet = elm$core$Array$fromList(
 		_Utils_ap(
@@ -6211,11 +6226,21 @@ var author$project$Main$update = F2(
 				case 'SelectMode':
 					var m = msg.a;
 					var v = (m === 'multi') ? 'multi' : 'config';
-					return _Utils_Tuple2(
-						_Utils_update(
+					if (m === 'multi') {
+						var $temp$msg = author$project$Main$Pairing,
+							$temp$model = _Utils_update(
 							model,
-							{mode: m, viewStatus: v}),
-						elm$core$Platform$Cmd$none);
+							{mode: m, viewStatus: 'multi'});
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					} else {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{mode: m, viewStatus: 'config'}),
+							elm$core$Platform$Cmd$none);
+					}
 				case 'CheckIsNum':
 					var b = msg.a;
 					return _Utils_Tuple2(
@@ -6294,13 +6319,47 @@ var author$project$Main$update = F2(
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'Result':
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				default:
+				case 'NowMatching':
 					var ticker = (model.matchTicker === '...') ? '' : (model.matchTicker + '.');
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
 							{matchTicker: ticker}),
 						elm$core$Platform$Cmd$none);
+				case 'Pairing':
+					return _Utils_Tuple2(
+						model,
+						author$project$Main$paringRoom(_Utils_Tuple0));
+				case 'SendMessage':
+					return _Utils_Tuple2(
+						model,
+						author$project$Main$sendMessage('hogeohgoehohgoeho'));
+				case 'MultiStart':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{viewStatus: 'buttle'}),
+						A2(
+							elm$random$Random$generate,
+							author$project$Main$SetChar,
+							A2(
+								elm$random$Random$int,
+								0,
+								elm$core$Array$length(model.charSet))));
+				case 'ReceiveMessage':
+					var s = msg.a;
+					if (s === 'pairling') {
+						var $temp$msg = author$project$Main$MultiStart,
+							$temp$model = model;
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					} else {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
+				default:
+					var s = msg.a;
+					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 			}
 		}
 	});
@@ -6409,7 +6468,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
-var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -6821,6 +6879,69 @@ var author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$text('Now Matching' + model.matchTicker)
+							]))
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('inner'),
+						elm$html$Html$Attributes$class(
+						A2(author$project$Main$toggleClass, model.viewStatus, 'buttle'))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('You are vimmer, you are vimmer!')
+							])),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('ghost char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.targetChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.targetChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
+								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								author$project$Main$timeStringFromMs(model.spend))
+							])),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.targetChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
+								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(
+								author$project$Main$timeStringFromMs(model.spend))
 							]))
 					]))
 			]));
