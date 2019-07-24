@@ -6053,6 +6053,12 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
+var elm$core$Debug$log = _Debug_log;
+var elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
+	});
+var elm$json$Json$Decode$decodeString = _Json_runOnString;
 var elm$random$Random$Generate = function (a) {
 	return {$: 'Generate', a: a};
 };
@@ -6348,12 +6354,27 @@ var author$project$Main$update = F2(
 								elm$core$Array$length(model.charSet))));
 				case 'ReceiveMessage':
 					var s = msg.a;
-					if (s === 'pairling') {
-						var $temp$msg = author$project$Main$MultiStart,
-							$temp$model = model;
-						msg = $temp$msg;
-						model = $temp$model;
-						continue update;
+					var message = A2(
+						elm$json$Json$Decode$decodeString,
+						A2(
+							elm$json$Json$Decode$at,
+							_List_fromArray(
+								['message']),
+							elm$json$Json$Decode$string),
+						s);
+					var b = A2(elm$core$Debug$log, 'hogehoge', message);
+					var a = A2(elm$core$Debug$log, 'hogehoge', s);
+					if (message.$ === 'Ok') {
+						var res = message.a;
+						if (res === 'pairing') {
+							var $temp$msg = author$project$Main$MultiStart,
+								$temp$model = model;
+							msg = $temp$msg;
+							model = $temp$model;
+							continue update;
+						} else {
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
 					} else {
 						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 					}
@@ -6500,10 +6521,6 @@ var elm$html$Html$Events$on = F2(
 			elm$virtual_dom$VirtualDom$on,
 			event,
 			elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
 	});
 var elm$json$Json$Decode$bool = _Json_decodeBool;
 var elm$html$Html$Events$targetChecked = A2(

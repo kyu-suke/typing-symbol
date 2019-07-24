@@ -204,12 +204,27 @@ update msg model =
             ( { model | viewStatus = "buttle" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
         ReceiveMessage s ->
-            if s == "pairling" then
-                update MultiStart model
+            let
+                message =
+                    Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
-            else
-                -- ( { model | receivedMessage = s }, Cmd.none )
-                ( model, Cmd.none )
+                a =
+                    Debug.log "hogehoge" s
+
+                b =
+                    Debug.log "hogehoge" message
+            in
+            case message of
+                Ok res ->
+                    if res == "pairing" then
+                        update MultiStart model
+
+                    else
+                        -- ( { model | receivedMessage = s }, Cmd.none )
+                        ( model, Cmd.none )
+
+                _ ->
+                    ( model, Cmd.none )
 
         InputMessage s ->
             -- ( { model | inputMessage = s }, Cmd.none )
