@@ -5903,7 +5903,9 @@ var author$project$Main$subscriptions = function (model) {
 			]));
 };
 var author$project$Main$End = {$: 'End'};
-var author$project$Main$MultiStart = {$: 'MultiStart'};
+var author$project$Main$MultiStart = function (a) {
+	return {$: 'MultiStart', a: a};
+};
 var author$project$Main$Pairing = {$: 'Pairing'};
 var author$project$Main$SelectMode = function (a) {
 	return {$: 'SelectMode', a: a};
@@ -6341,19 +6343,22 @@ var author$project$Main$update = F2(
 						model,
 						author$project$Main$sendMessage('hogeohgoehohgoeho'));
 				case 'MultiStart':
+					var s = msg.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{viewStatus: 'buttle'}),
-						A2(
-							elm$random$Random$generate,
-							author$project$Main$SetChar,
-							A2(
-								elm$random$Random$int,
-								0,
-								elm$core$Array$length(model.charSet))));
+							{targetChar: s, viewStatus: 'buttle'}),
+						elm$core$Platform$Cmd$none);
 				case 'ReceiveMessage':
 					var s = msg.a;
+					var targetChar = A2(
+						elm$json$Json$Decode$decodeString,
+						A2(
+							elm$json$Json$Decode$at,
+							_List_fromArray(
+								['targetChar']),
+							elm$json$Json$Decode$string),
+						s);
 					var message = A2(
 						elm$json$Json$Decode$decodeString,
 						A2(
@@ -6362,16 +6367,21 @@ var author$project$Main$update = F2(
 								['message']),
 							elm$json$Json$Decode$string),
 						s);
-					var b = A2(elm$core$Debug$log, 'hogehoge', message);
-					var a = A2(elm$core$Debug$log, 'hogehoge', s);
+					var b = A2(elm$core$Debug$log, 'message', message);
+					var a = A2(elm$core$Debug$log, 'all of message', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
 						if (res === 'pairing') {
-							var $temp$msg = author$project$Main$MultiStart,
-								$temp$model = model;
-							msg = $temp$msg;
-							model = $temp$model;
-							continue update;
+							if (targetChar.$ === 'Ok') {
+								var tchr = targetChar.a;
+								var $temp$msg = author$project$Main$MultiStart(tchr),
+									$temp$model = model;
+								msg = $temp$msg;
+								model = $temp$model;
+								continue update;
+							} else {
+								return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+							}
 						} else {
 							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 						}

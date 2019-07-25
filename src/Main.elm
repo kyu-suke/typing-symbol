@@ -89,7 +89,7 @@ type Msg
     | Pairing
     | ReceiveType
     | Result
-    | MultiStart
+    | MultiStart String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -200,24 +200,32 @@ update msg model =
         SendMessage ->
             ( model, sendMessage "hogeohgoehohgoeho" )
 
-        MultiStart ->
-            ( { model | viewStatus = "buttle" }, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+        MultiStart s ->
+            ( { model | viewStatus = "buttle", targetChar = s }, Cmd.none )
 
         ReceiveMessage s ->
             let
                 message =
                     Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
+                targetChar =
+                    Decode.decodeString (Decode.at [ "targetChar" ] Decode.string) s
+
                 a =
-                    Debug.log "hogehoge" s
+                    Debug.log "all of message" s
 
                 b =
-                    Debug.log "hogehoge" message
+                    Debug.log "message" message
             in
             case message of
                 Ok res ->
                     if res == "pairing" then
-                        update MultiStart model
+                        case targetChar of
+                            Ok tchr ->
+                                update (MultiStart tchr) model
+
+                            _ ->
+                                ( model, Cmd.none )
 
                     else
                         -- ( { model | receivedMessage = s }, Cmd.none )
