@@ -6669,6 +6669,32 @@ var author$project$Main$view = function (model) {
 											[
 												elm$html$Html$text('MULTI\u3000')
 											]))
+									])),
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('modeLabel')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$input,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$type_('radio'),
+												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+												elm$html$Html$Attributes$checked(model.mode === 'option'),
+												elm$html$Html$Events$onCheck(author$project$Main$CheckMultiMode)
+											]),
+										_List_Nil),
+										A2(
+										elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('OPTION\u3000')
+											]))
 									]))
 							]))
 					])),
