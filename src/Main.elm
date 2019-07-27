@@ -53,6 +53,8 @@ init _ =
       , isNum = True
       , isAlpha = True
       , matchTicker = ""
+      , playerOneLeftChar = ""
+      , playerTwoLeftChar = ""
       }
     , Cmd.none
     )
@@ -64,6 +66,7 @@ init _ =
 
 type Msg
     = Change String
+    | ChangeAtTitle String
       -- title
     | CheckSingleMode Bool
     | CheckMultiMode Bool
@@ -89,6 +92,8 @@ type Msg
     | Pairing
     | ReceiveType
     | Result
+    | EndMulti
+    | MultiReady String
     | MultiStart String
 
 
@@ -100,14 +105,30 @@ update msg model =
                 position =
                     string
             in
-            if model.viewStatus == "title" && string == "Enter" then
-                update (SelectMode model.mode) model
+            if model.viewStatus == "title" then
+                update (ChangeAtTitle string) model
 
-            else
+            else if model.viewStatus == "running" then
                 update End
                     { model
                         | targetChar = removeChar model position
                     }
+
+            else if model.viewStatus == "battle" then
+                update EndMulti
+                    { model
+                        | playerOneLeftChar = removeMultiChar model position
+                    }
+
+            else
+                ( model, Cmd.none )
+
+        ChangeAtTitle string ->
+            if string == "Enter" then
+                update (SelectMode model.mode) model
+
+            else
+                ( model, Cmd.none )
 
         CheckSingleMode b ->
             ( { model | mode = "single" }, Cmd.none )
@@ -200,8 +221,11 @@ update msg model =
         SendMessage ->
             ( model, sendMessage "hogeohgoehohgoeho" )
 
+        MultiReady s ->
+            ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
+
         MultiStart s ->
-            ( { model | viewStatus = "buttle", targetChar = s }, Cmd.none )
+            ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
 
         ReceiveMessage s ->
             let
@@ -213,16 +237,13 @@ update msg model =
 
                 a =
                     Debug.log "all of message" s
-
-                b =
-                    Debug.log "message" message
             in
             case message of
                 Ok res ->
                     if res == "pairing" then
                         case targetChar of
                             Ok tchr ->
-                                update (MultiStart tchr) model
+                                update (MultiReady tchr) model
 
                             _ ->
                                 ( model, Cmd.none )
@@ -237,6 +258,9 @@ update msg model =
         InputMessage s ->
             -- ( { model | inputMessage = s }, Cmd.none )
             ( model, Cmd.none )
+
+        EndMulti ->
+            ( Single.end model, Cmd.none )
 
 
 removeChar : Model -> String -> String
@@ -256,6 +280,25 @@ removeChar model addChar =
 
         _ ->
             model.targetChar
+
+
+removeMultiChar : Model -> String -> String
+removeMultiChar model addChar =
+    let
+        s =
+            String.left 1 model.playerOneLeftChar
+    in
+    case s == addChar of
+        True ->
+            case String.uncons model.playerOneLeftChar of
+                Just ( h, tl ) ->
+                    tl
+
+                _ ->
+                    ""
+
+        _ ->
+            model.playerOneLeftChar
 
 
 
@@ -283,10 +326,11 @@ view model =
                     [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "multi"), onCheck CheckMultiMode ] []
                     , span [] [ text "MULTI\u{3000}" ]
                     ]
-                , label [ class "modeLabel" ]
-                    [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "option"), onCheck CheckMultiMode ] []
-                    , span [] [ text "OPTION\u{3000}" ]
-                    ]
+
+                -- , label [ class "modeLabel" ]
+                --     [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "option"), onCheck CheckMultiMode ] []
+                --     , span [] [ text "OPTION\u{3000}" ]
+                --     ]
                 ]
             ]
 
@@ -329,13 +373,13 @@ view model =
         , div [ class "inner", class <| toggleClass model.viewStatus "multi" ]
             [ h1 [ class "matchTicker" ] [ text <| "Now Matching" ++ model.matchTicker ]
             ]
-        , div [ class "inner", class <| toggleClass model.viewStatus "buttle" ]
+        , div [ class "inner", class <| toggleClass model.viewStatus "battle" ]
             [ h1 [] [ text "You are vimmer, you are vimmer!" ]
-            , input [ class "ghost char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent" ] []
-            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text (timeStringFromMs model.spend) ]
-            , input [ class "real char-length nes-input is-dark", value model.targetChar, style "caret-color" "transparent", attribute "disabled" "" ] []
-            , h1 [] [ text (timeStringFromMs model.spend) ]
+            , input [ class "ghost char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent" ] []
+            , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
+            , h1 [] [ text "" ]
+            , input [ class "real char-length nes-input is-dark", value model.playerTwoLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             ]
         ]
 

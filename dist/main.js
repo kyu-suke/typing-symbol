@@ -4936,6 +4936,8 @@ var author$project$Main$init = function (_n0) {
 			isNum: true,
 			matchTicker: '',
 			mode: 'single',
+			playerOneLeftChar: '',
+			playerTwoLeftChar: '',
 			spend: 0,
 			targetChar: '',
 			viewStatus: 'title'
@@ -5902,9 +5904,13 @@ var author$project$Main$subscriptions = function (model) {
 				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage)
 			]));
 };
+var author$project$Main$ChangeAtTitle = function (a) {
+	return {$: 'ChangeAtTitle', a: a};
+};
 var author$project$Main$End = {$: 'End'};
-var author$project$Main$MultiStart = function (a) {
-	return {$: 'MultiStart', a: a};
+var author$project$Main$EndMulti = {$: 'EndMulti'};
+var author$project$Main$MultiReady = function (a) {
+	return {$: 'MultiReady', a: a};
 };
 var author$project$Main$Pairing = {$: 'Pairing'};
 var author$project$Main$SelectMode = function (a) {
@@ -5935,6 +5941,24 @@ var author$project$Main$removeChar = F2(
 			}
 		} else {
 			return model.targetChar;
+		}
+	});
+var author$project$Main$removeMultiChar = F2(
+	function (model, addChar) {
+		var s = A2(elm$core$String$left, 1, model.playerOneLeftChar);
+		var _n0 = _Utils_eq(s, addChar);
+		if (_n0) {
+			var _n1 = elm$core$String$uncons(model.playerOneLeftChar);
+			if (_n1.$ === 'Just') {
+				var _n2 = _n1.a;
+				var h = _n2.a;
+				var tl = _n2.b;
+				return tl;
+			} else {
+				return '';
+			}
+		} else {
+			return model.playerOneLeftChar;
 		}
 	});
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -6200,22 +6224,49 @@ var author$project$Main$update = F2(
 				case 'Change':
 					var string = msg.a;
 					var position = string;
-					if ((model.viewStatus === 'title') && (string === 'Enter')) {
+					if (model.viewStatus === 'title') {
+						var $temp$msg = author$project$Main$ChangeAtTitle(string),
+							$temp$model = model;
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					} else {
+						if (model.viewStatus === 'running') {
+							var $temp$msg = author$project$Main$End,
+								$temp$model = _Utils_update(
+								model,
+								{
+									targetChar: A2(author$project$Main$removeChar, model, position)
+								});
+							msg = $temp$msg;
+							model = $temp$model;
+							continue update;
+						} else {
+							if (model.viewStatus === 'battle') {
+								var $temp$msg = author$project$Main$EndMulti,
+									$temp$model = _Utils_update(
+									model,
+									{
+										playerOneLeftChar: A2(author$project$Main$removeMultiChar, model, position)
+									});
+								msg = $temp$msg;
+								model = $temp$model;
+								continue update;
+							} else {
+								return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+							}
+						}
+					}
+				case 'ChangeAtTitle':
+					var string = msg.a;
+					if (string === 'Enter') {
 						var $temp$msg = author$project$Main$SelectMode(model.mode),
 							$temp$model = model;
 						msg = $temp$msg;
 						model = $temp$model;
 						continue update;
 					} else {
-						var $temp$msg = author$project$Main$End,
-							$temp$model = _Utils_update(
-							model,
-							{
-								targetChar: A2(author$project$Main$removeChar, model, position)
-							});
-						msg = $temp$msg;
-						model = $temp$model;
-						continue update;
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 					}
 				case 'CheckSingleMode':
 					var b = msg.a;
@@ -6342,12 +6393,19 @@ var author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						model,
 						author$project$Main$sendMessage('hogeohgoehohgoeho'));
+				case 'MultiReady':
+					var s = msg.a;
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{playerOneLeftChar: s, playerTwoLeftChar: s, targetChar: s, viewStatus: 'battle'}),
+						elm$core$Platform$Cmd$none);
 				case 'MultiStart':
 					var s = msg.a;
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{targetChar: s, viewStatus: 'buttle'}),
+							{playerOneLeftChar: s, playerTwoLeftChar: s, targetChar: s, viewStatus: 'battle'}),
 						elm$core$Platform$Cmd$none);
 				case 'ReceiveMessage':
 					var s = msg.a;
@@ -6367,14 +6425,13 @@ var author$project$Main$update = F2(
 								['message']),
 							elm$json$Json$Decode$string),
 						s);
-					var b = A2(elm$core$Debug$log, 'message', message);
 					var a = A2(elm$core$Debug$log, 'all of message', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
 						if (res === 'pairing') {
 							if (targetChar.$ === 'Ok') {
 								var tchr = targetChar.a;
-								var $temp$msg = author$project$Main$MultiStart(tchr),
+								var $temp$msg = author$project$Main$MultiReady(tchr),
 									$temp$model = model;
 								msg = $temp$msg;
 								model = $temp$model;
@@ -6388,9 +6445,13 @@ var author$project$Main$update = F2(
 					} else {
 						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 					}
-				default:
+				case 'InputMessage':
 					var s = msg.a;
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+				default:
+					return _Utils_Tuple2(
+						author$project$Single$end(model),
+						elm$core$Platform$Cmd$none);
 			}
 		}
 	});
@@ -6669,32 +6730,6 @@ var author$project$Main$view = function (model) {
 											[
 												elm$html$Html$text('MULTI\u3000')
 											]))
-									])),
-								A2(
-								elm$html$Html$label,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('modeLabel')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$input,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$type_('radio'),
-												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
-												elm$html$Html$Attributes$checked(model.mode === 'option'),
-												elm$html$Html$Events$onCheck(author$project$Main$CheckMultiMode)
-											]),
-										_List_Nil),
-										A2(
-										elm$html$Html$span,
-										_List_Nil,
-										_List_fromArray(
-											[
-												elm$html$Html$text('OPTION\u3000')
-											]))
 									]))
 							]))
 					])),
@@ -6940,7 +6975,7 @@ var author$project$Main$view = function (model) {
 					[
 						elm$html$Html$Attributes$class('inner'),
 						elm$html$Html$Attributes$class(
-						A2(author$project$Main$toggleClass, model.viewStatus, 'buttle'))
+						A2(author$project$Main$toggleClass, model.viewStatus, 'battle'))
 					]),
 				_List_fromArray(
 					[
@@ -6952,25 +6987,6 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$text('You are vimmer, you are vimmer!')
 							])),
 						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('ghost char-length nes-input is-dark'),
-								elm$html$Html$Attributes$value(model.targetChar),
-								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent')
-							]),
-						_List_Nil),
-						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
-								elm$html$Html$Attributes$value(model.targetChar),
-								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
-								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
-							]),
-						_List_Nil),
-						A2(
 						elm$html$Html$h1,
 						_List_Nil,
 						_List_fromArray(
@@ -6982,8 +6998,17 @@ var author$project$Main$view = function (model) {
 						elm$html$Html$input,
 						_List_fromArray(
 							[
+								elm$html$Html$Attributes$class('ghost char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.playerOneLeftChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent')
+							]),
+						_List_Nil),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
 								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
-								elm$html$Html$Attributes$value(model.targetChar),
+								elm$html$Html$Attributes$value(model.playerOneLeftChar),
 								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
 								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
 							]),
@@ -6993,9 +7018,18 @@ var author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text(
-								author$project$Main$timeStringFromMs(model.spend))
-							]))
+								elm$html$Html$text('')
+							])),
+						A2(
+						elm$html$Html$input,
+						_List_fromArray(
+							[
+								elm$html$Html$Attributes$class('real char-length nes-input is-dark'),
+								elm$html$Html$Attributes$value(model.playerTwoLeftChar),
+								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent'),
+								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
+							]),
+						_List_Nil)
 					]))
 			]));
 };

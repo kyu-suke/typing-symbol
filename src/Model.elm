@@ -13,4 +13,6 @@ type alias MainModel =
     , isNum : Bool
     , isAlpha : Bool
     , matchTicker : String
+    , playerOneLeftChar : String
+    , playerTwoLeftChar : String
     }
