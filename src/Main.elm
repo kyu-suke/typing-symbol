@@ -55,6 +55,7 @@ init _ =
       , matchTicker = ""
       , playerOneLeftChar = ""
       , playerTwoLeftChar = ""
+      , pid = Nothing
       }
     , Cmd.none
     )
@@ -67,6 +68,7 @@ init _ =
 type Msg
     = Change String
     | ChangeAtTitle String
+    | ChangeAtMulti String
       -- title
     | CheckSingleMode Bool
     | CheckMultiMode Bool
@@ -82,7 +84,7 @@ type Msg
     | Retry
       -- multi
       -- | Pairing
-    | SendMessage
+    | SendMessage String
     | ReceiveMessage String
     | InputMessage String
     | NowMatching Time.Posix
@@ -115,10 +117,7 @@ update msg model =
                     }
 
             else if model.viewStatus == "battle" then
-                update EndMulti
-                    { model
-                        | playerOneLeftChar = removeMultiChar model position
-                    }
+                update (ChangeAtMulti string) model
 
             else
                 ( model, Cmd.none )
@@ -129,6 +128,17 @@ update msg model =
 
             else
                 ( model, Cmd.none )
+
+        ChangeAtMulti string ->
+            let
+                afterChar =
+                    removeMultiChar model string
+            in
+            if model.playerOneLeftChar == afterChar then
+                ( model, Cmd.none )
+
+            else
+                update (SendMessage afterChar) model
 
         CheckSingleMode b ->
             ( { model | mode = "single" }, Cmd.none )
@@ -218,8 +228,15 @@ update msg model =
         Pairing ->
             ( model, paringRoom () )
 
-        SendMessage ->
-            ( model, sendMessage "hogeohgoehohgoeho" )
+        SendMessage s ->
+            if s == "" then
+                update EndMulti
+                    { model
+                        | playerOneLeftChar = removeMultiChar model s
+                    }
+
+            else
+                ( model, sendMessage s )
 
         MultiReady s ->
             ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
@@ -235,18 +252,66 @@ update msg model =
                 targetChar =
                     Decode.decodeString (Decode.at [ "targetChar" ] Decode.string) s
 
+                p1char =
+                    case Decode.decodeString (Decode.at [ "playerOneLeftChar" ] Decode.string) s of
+                        Ok tchr ->
+                            tchr
+
+                        _ ->
+                            model.playerOneLeftChar
+
+                p2char =
+                    case Decode.decodeString (Decode.at [ "playerTwoLeftChar" ] Decode.string) s of
+                        Ok tchr ->
+                            tchr
+
+                        _ ->
+                            model.playerTwoLeftChar
+
+                p1id =
+                    case Decode.decodeString (Decode.at [ "p1id" ] Decode.string) s of
+                        Ok tchr ->
+                            Just tchr
+
+                        _ ->
+                            model.pid
+
+                p2id =
+                    case Decode.decodeString (Decode.at [ "p2id" ] Decode.string) s of
+                        Ok tchr ->
+                            Just tchr
+
+                        _ ->
+                            model.pid
+
+                m =
+                    if model.pid == Nothing then
+                        { model | pid = p2id }
+
+                    else
+                        model
+
                 a =
                     Debug.log "all of message" s
+
+                b =
+                    Debug.log "all of message" model
             in
             case message of
                 Ok res ->
-                    if res == "pairing" then
+                    if res == "wait" then
+                        ( { model | pid = p1id }, Cmd.none )
+
+                    else if res == "pairing" then
                         case targetChar of
                             Ok tchr ->
-                                update (MultiReady tchr) model
+                                update (MultiReady tchr) m
 
                             _ ->
                                 ( model, Cmd.none )
+
+                    else if res == "typed" then
+                        ( { model | playerOneLeftChar = p1char, playerTwoLeftChar = p2char }, Cmd.none )
 
                     else
                         -- ( { model | receivedMessage = s }, Cmd.none )

@@ -4661,6 +4661,7 @@ var elm$core$Array$fromList = function (list) {
 	}
 };
 var elm$core$Basics$append = _Utils_append;
+var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Basics$False = {$: 'False'};
 var elm$core$Result$isOk = function (result) {
 	if (result.$ === 'Ok') {
@@ -4713,7 +4714,6 @@ var elm$core$Array$initialize = F2(
 var elm$core$Maybe$Just = function (a) {
 	return {$: 'Just', a: a};
 };
-var elm$core$Maybe$Nothing = {$: 'Nothing'};
 var elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4936,6 +4936,7 @@ var author$project$Main$init = function (_n0) {
 			isNum: true,
 			matchTicker: '',
 			mode: 'single',
+			pid: elm$core$Maybe$Nothing,
 			playerOneLeftChar: '',
 			playerTwoLeftChar: '',
 			spend: 0,
@@ -5904,6 +5905,9 @@ var author$project$Main$subscriptions = function (model) {
 				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage)
 			]));
 };
+var author$project$Main$ChangeAtMulti = function (a) {
+	return {$: 'ChangeAtMulti', a: a};
+};
 var author$project$Main$ChangeAtTitle = function (a) {
 	return {$: 'ChangeAtTitle', a: a};
 };
@@ -5915,6 +5919,9 @@ var author$project$Main$MultiReady = function (a) {
 var author$project$Main$Pairing = {$: 'Pairing'};
 var author$project$Main$SelectMode = function (a) {
 	return {$: 'SelectMode', a: a};
+};
+var author$project$Main$SendMessage = function (a) {
+	return {$: 'SendMessage', a: a};
 };
 var author$project$Main$SetChar = function (a) {
 	return {$: 'SetChar', a: a};
@@ -6243,12 +6250,8 @@ var author$project$Main$update = F2(
 							continue update;
 						} else {
 							if (model.viewStatus === 'battle') {
-								var $temp$msg = author$project$Main$EndMulti,
-									$temp$model = _Utils_update(
-									model,
-									{
-										playerOneLeftChar: A2(author$project$Main$removeMultiChar, model, position)
-									});
+								var $temp$msg = author$project$Main$ChangeAtMulti(string),
+									$temp$model = model;
 								msg = $temp$msg;
 								model = $temp$model;
 								continue update;
@@ -6267,6 +6270,18 @@ var author$project$Main$update = F2(
 						continue update;
 					} else {
 						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					}
+				case 'ChangeAtMulti':
+					var string = msg.a;
+					var afterChar = A2(author$project$Main$removeMultiChar, model, string);
+					if (_Utils_eq(model.playerOneLeftChar, afterChar)) {
+						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+					} else {
+						var $temp$msg = author$project$Main$SendMessage(afterChar),
+							$temp$model = model;
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
 					}
 				case 'CheckSingleMode':
 					var b = msg.a;
@@ -6390,9 +6405,22 @@ var author$project$Main$update = F2(
 						model,
 						author$project$Main$paringRoom(_Utils_Tuple0));
 				case 'SendMessage':
-					return _Utils_Tuple2(
-						model,
-						author$project$Main$sendMessage('hogeohgoehohgoeho'));
+					var s = msg.a;
+					if (s === '') {
+						var $temp$msg = author$project$Main$EndMulti,
+							$temp$model = _Utils_update(
+							model,
+							{
+								playerOneLeftChar: A2(author$project$Main$removeMultiChar, model, s)
+							});
+						msg = $temp$msg;
+						model = $temp$model;
+						continue update;
+					} else {
+						return _Utils_Tuple2(
+							model,
+							author$project$Main$sendMessage(s));
+					}
 				case 'MultiReady':
 					var s = msg.a;
 					return _Utils_Tuple2(
@@ -6417,6 +6445,70 @@ var author$project$Main$update = F2(
 								['targetChar']),
 							elm$json$Json$Decode$string),
 						s);
+					var p2id = function () {
+						var _n7 = A2(
+							elm$json$Json$Decode$decodeString,
+							A2(
+								elm$json$Json$Decode$at,
+								_List_fromArray(
+									['p2id']),
+								elm$json$Json$Decode$string),
+							s);
+						if (_n7.$ === 'Ok') {
+							var tchr = _n7.a;
+							return elm$core$Maybe$Just(tchr);
+						} else {
+							return model.pid;
+						}
+					}();
+					var p2char = function () {
+						var _n6 = A2(
+							elm$json$Json$Decode$decodeString,
+							A2(
+								elm$json$Json$Decode$at,
+								_List_fromArray(
+									['playerTwoLeftChar']),
+								elm$json$Json$Decode$string),
+							s);
+						if (_n6.$ === 'Ok') {
+							var tchr = _n6.a;
+							return tchr;
+						} else {
+							return model.playerTwoLeftChar;
+						}
+					}();
+					var p1id = function () {
+						var _n5 = A2(
+							elm$json$Json$Decode$decodeString,
+							A2(
+								elm$json$Json$Decode$at,
+								_List_fromArray(
+									['p1id']),
+								elm$json$Json$Decode$string),
+							s);
+						if (_n5.$ === 'Ok') {
+							var tchr = _n5.a;
+							return elm$core$Maybe$Just(tchr);
+						} else {
+							return model.pid;
+						}
+					}();
+					var p1char = function () {
+						var _n4 = A2(
+							elm$json$Json$Decode$decodeString,
+							A2(
+								elm$json$Json$Decode$at,
+								_List_fromArray(
+									['playerOneLeftChar']),
+								elm$json$Json$Decode$string),
+							s);
+						if (_n4.$ === 'Ok') {
+							var tchr = _n4.a;
+							return tchr;
+						} else {
+							return model.playerOneLeftChar;
+						}
+					}();
 					var message = A2(
 						elm$json$Json$Decode$decodeString,
 						A2(
@@ -6425,22 +6517,42 @@ var author$project$Main$update = F2(
 								['message']),
 							elm$json$Json$Decode$string),
 						s);
+					var m = _Utils_eq(model.pid, elm$core$Maybe$Nothing) ? _Utils_update(
+						model,
+						{pid: p2id}) : model;
+					var b = A2(elm$core$Debug$log, 'all of message', model);
 					var a = A2(elm$core$Debug$log, 'all of message', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
-						if (res === 'pairing') {
-							if (targetChar.$ === 'Ok') {
-								var tchr = targetChar.a;
-								var $temp$msg = author$project$Main$MultiReady(tchr),
-									$temp$model = model;
-								msg = $temp$msg;
-								model = $temp$model;
-								continue update;
-							} else {
-								return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-							}
+						if (res === 'wait') {
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{pid: p1id}),
+								elm$core$Platform$Cmd$none);
 						} else {
-							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+							if (res === 'pairing') {
+								if (targetChar.$ === 'Ok') {
+									var tchr = targetChar.a;
+									var $temp$msg = author$project$Main$MultiReady(tchr),
+										$temp$model = m;
+									msg = $temp$msg;
+									model = $temp$model;
+									continue update;
+								} else {
+									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								}
+							} else {
+								if (res === 'typed') {
+									return _Utils_Tuple2(
+										_Utils_update(
+											model,
+											{playerOneLeftChar: p1char, playerTwoLeftChar: p2char}),
+										elm$core$Platform$Cmd$none);
+								} else {
+									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								}
+							}
 						}
 					} else {
 						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
