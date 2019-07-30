@@ -4936,6 +4936,8 @@ var author$project$Main$init = function (_n0) {
 			isNum: true,
 			matchTicker: '',
 			mode: 'single',
+			p1id: elm$core$Maybe$Nothing,
+			p2id: elm$core$Maybe$Nothing,
 			pid: elm$core$Maybe$Nothing,
 			playerOneLeftChar: '',
 			playerTwoLeftChar: '',
@@ -5912,7 +5914,6 @@ var author$project$Main$ChangeAtTitle = function (a) {
 	return {$: 'ChangeAtTitle', a: a};
 };
 var author$project$Main$End = {$: 'End'};
-var author$project$Main$EndMulti = {$: 'EndMulti'};
 var author$project$Main$MultiReady = function (a) {
 	return {$: 'MultiReady', a: a};
 };
@@ -5926,6 +5927,10 @@ var author$project$Main$SendMessage = function (a) {
 var author$project$Main$SetChar = function (a) {
 	return {$: 'SetChar', a: a};
 };
+var author$project$Main$Typed = F2(
+	function (a, b) {
+		return {$: 'Typed', a: a, b: b};
+	});
 var elm$json$Json$Encode$null = _Json_encodeNull;
 var author$project$Main$paringRoom = _Platform_outgoingPort(
 	'paringRoom',
@@ -5950,12 +5955,16 @@ var author$project$Main$removeChar = F2(
 			return model.targetChar;
 		}
 	});
+var elm$core$Debug$log = _Debug_log;
 var author$project$Main$removeMultiChar = F2(
 	function (model, addChar) {
-		var s = A2(elm$core$String$left, 1, model.playerOneLeftChar);
+		var chr = _Utils_eq(model.pid, model.p1id) ? model.playerOneLeftChar : model.playerTwoLeftChar;
+		var s = A2(elm$core$String$left, 1, chr);
+		var b = A2(elm$core$Debug$log, 'bool:  ', model.playerOneLeftChar);
+		var a = A2(elm$core$Debug$log, 'model:  ', model.playerOneLeftChar);
 		var _n0 = _Utils_eq(s, addChar);
 		if (_n0) {
-			var _n1 = elm$core$String$uncons(model.playerOneLeftChar);
+			var _n1 = elm$core$String$uncons(chr);
 			if (_n1.$ === 'Just') {
 				var _n2 = _n1.a;
 				var h = _n2.a;
@@ -5965,7 +5974,7 @@ var author$project$Main$removeMultiChar = F2(
 				return '';
 			}
 		} else {
-			return model.playerOneLeftChar;
+			return chr;
 		}
 	});
 var elm$json$Json$Encode$string = _Json_wrap;
@@ -6086,7 +6095,6 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
-var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
@@ -6273,8 +6281,9 @@ var author$project$Main$update = F2(
 					}
 				case 'ChangeAtMulti':
 					var string = msg.a;
+					var leftChar = _Utils_eq(model.pid, model.p1id) ? model.playerOneLeftChar : model.playerTwoLeftChar;
 					var afterChar = A2(author$project$Main$removeMultiChar, model, string);
-					if (_Utils_eq(model.playerOneLeftChar, afterChar)) {
+					if (_Utils_eq(leftChar, afterChar)) {
 						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 					} else {
 						var $temp$msg = author$project$Main$SendMessage(afterChar),
@@ -6406,21 +6415,24 @@ var author$project$Main$update = F2(
 						author$project$Main$paringRoom(_Utils_Tuple0));
 				case 'SendMessage':
 					var s = msg.a;
-					if (s === '') {
-						var $temp$msg = author$project$Main$EndMulti,
-							$temp$model = _Utils_update(
+					return (s === '') ? _Utils_Tuple2(
+						model,
+						author$project$Main$sendMessage(s)) : _Utils_Tuple2(
+						model,
+						author$project$Main$sendMessage(s));
+				case 'Typed':
+					var p1char = msg.a;
+					var p2char = msg.b;
+					var _n2 = _Utils_eq(model.pid, model.p1id) ? _Utils_Tuple2(p1char, p2char) : _Utils_Tuple2(p2char, p1char);
+					var modelp1char = _n2.a;
+					var modelp2char = _n2.b;
+					var a = A2(elm$core$Debug$log, 'modelp1char:  ', modelp1char);
+					var b = A2(elm$core$Debug$log, 'modelp2char:  ', modelp2char);
+					return _Utils_Tuple2(
+						_Utils_update(
 							model,
-							{
-								playerOneLeftChar: A2(author$project$Main$removeMultiChar, model, s)
-							});
-						msg = $temp$msg;
-						model = $temp$model;
-						continue update;
-					} else {
-						return _Utils_Tuple2(
-							model,
-							author$project$Main$sendMessage(s));
-					}
+							{playerOneLeftChar: modelp1char, playerTwoLeftChar: modelp2char}),
+						elm$core$Platform$Cmd$none);
 				case 'MultiReady':
 					var s = msg.a;
 					return _Utils_Tuple2(
@@ -6446,23 +6458,23 @@ var author$project$Main$update = F2(
 							elm$json$Json$Decode$string),
 						s);
 					var p2id = function () {
-						var _n7 = A2(
+						var _n8 = A2(
 							elm$json$Json$Decode$decodeString,
 							A2(
 								elm$json$Json$Decode$at,
 								_List_fromArray(
-									['p2id']),
+									['p2Id']),
 								elm$json$Json$Decode$string),
 							s);
-						if (_n7.$ === 'Ok') {
-							var tchr = _n7.a;
+						if (_n8.$ === 'Ok') {
+							var tchr = _n8.a;
 							return elm$core$Maybe$Just(tchr);
 						} else {
 							return model.pid;
 						}
 					}();
 					var p2char = function () {
-						var _n6 = A2(
+						var _n7 = A2(
 							elm$json$Json$Decode$decodeString,
 							A2(
 								elm$json$Json$Decode$at,
@@ -6470,31 +6482,31 @@ var author$project$Main$update = F2(
 									['playerTwoLeftChar']),
 								elm$json$Json$Decode$string),
 							s);
-						if (_n6.$ === 'Ok') {
-							var tchr = _n6.a;
+						if (_n7.$ === 'Ok') {
+							var tchr = _n7.a;
 							return tchr;
 						} else {
 							return model.playerTwoLeftChar;
 						}
 					}();
 					var p1id = function () {
-						var _n5 = A2(
+						var _n6 = A2(
 							elm$json$Json$Decode$decodeString,
 							A2(
 								elm$json$Json$Decode$at,
 								_List_fromArray(
-									['p1id']),
+									['p1Id']),
 								elm$json$Json$Decode$string),
 							s);
-						if (_n5.$ === 'Ok') {
-							var tchr = _n5.a;
+						if (_n6.$ === 'Ok') {
+							var tchr = _n6.a;
 							return elm$core$Maybe$Just(tchr);
 						} else {
 							return model.pid;
 						}
 					}();
 					var p1char = function () {
-						var _n4 = A2(
+						var _n5 = A2(
 							elm$json$Json$Decode$decodeString,
 							A2(
 								elm$json$Json$Decode$at,
@@ -6502,8 +6514,8 @@ var author$project$Main$update = F2(
 									['playerOneLeftChar']),
 								elm$json$Json$Decode$string),
 							s);
-						if (_n4.$ === 'Ok') {
-							var tchr = _n4.a;
+						if (_n5.$ === 'Ok') {
+							var tchr = _n5.a;
 							return tchr;
 						} else {
 							return model.playerOneLeftChar;
@@ -6519,8 +6531,10 @@ var author$project$Main$update = F2(
 						s);
 					var m = _Utils_eq(model.pid, elm$core$Maybe$Nothing) ? _Utils_update(
 						model,
-						{pid: p2id}) : model;
-					var b = A2(elm$core$Debug$log, 'all of message', model);
+						{p1id: p1id, p2id: p2id, pid: p2id}) : _Utils_update(
+						model,
+						{p1id: p1id, p2id: p2id});
+					var b = A2(elm$core$Debug$log, 'all of Model', model);
 					var a = A2(elm$core$Debug$log, 'all of message', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
@@ -6544,11 +6558,11 @@ var author$project$Main$update = F2(
 								}
 							} else {
 								if (res === 'typed') {
-									return _Utils_Tuple2(
-										_Utils_update(
-											model,
-											{playerOneLeftChar: p1char, playerTwoLeftChar: p2char}),
-										elm$core$Platform$Cmd$none);
+									var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
+										$temp$model = m;
+									msg = $temp$msg;
+									model = $temp$model;
+									continue update;
 								} else {
 									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 								}
@@ -7106,15 +7120,6 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$text(
 								author$project$Main$timeStringFromMs(model.spend))
 							])),
-						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('ghost char-length nes-input is-dark'),
-								elm$html$Html$Attributes$value(model.playerOneLeftChar),
-								A2(elm$html$Html$Attributes$style, 'caret-color', 'transparent')
-							]),
-						_List_Nil),
 						A2(
 						elm$html$Html$input,
 						_List_fromArray(

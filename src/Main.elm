@@ -55,6 +55,8 @@ init _ =
       , matchTicker = ""
       , playerOneLeftChar = ""
       , playerTwoLeftChar = ""
+      , p1id = Nothing
+      , p2id = Nothing
       , pid = Nothing
       }
     , Cmd.none
@@ -95,6 +97,7 @@ type Msg
     | ReceiveType
     | Result
     | EndMulti
+    | Typed String String
     | MultiReady String
     | MultiStart String
 
@@ -131,10 +134,17 @@ update msg model =
 
         ChangeAtMulti string ->
             let
+                leftChar =
+                    if model.pid == model.p1id then
+                        model.playerOneLeftChar
+
+                    else
+                        model.playerTwoLeftChar
+
                 afterChar =
                     removeMultiChar model string
             in
-            if model.playerOneLeftChar == afterChar then
+            if leftChar == afterChar then
                 ( model, Cmd.none )
 
             else
@@ -230,13 +240,31 @@ update msg model =
 
         SendMessage s ->
             if s == "" then
-                update EndMulti
-                    { model
-                        | playerOneLeftChar = removeMultiChar model s
-                    }
+                ( model, sendMessage s )
+                --update EndMulti
+                --    { model
+                --        | playerOneLeftChar = removeMultiChar model s
+                --    }
 
             else
                 ( model, sendMessage s )
+
+        Typed p1char p2char ->
+            let
+                ( modelp1char, modelp2char ) =
+                    if model.pid == model.p1id then
+                        ( p1char, p2char )
+
+                    else
+                        ( p2char, p1char )
+
+                a =
+                    Debug.log "modelp1char:  " modelp1char
+
+                b =
+                    Debug.log "modelp2char:  " modelp2char
+            in
+            ( { model | playerOneLeftChar = modelp1char, playerTwoLeftChar = modelp2char }, Cmd.none )
 
         MultiReady s ->
             ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
@@ -269,7 +297,7 @@ update msg model =
                             model.playerTwoLeftChar
 
                 p1id =
-                    case Decode.decodeString (Decode.at [ "p1id" ] Decode.string) s of
+                    case Decode.decodeString (Decode.at [ "p1Id" ] Decode.string) s of
                         Ok tchr ->
                             Just tchr
 
@@ -277,7 +305,7 @@ update msg model =
                             model.pid
 
                 p2id =
-                    case Decode.decodeString (Decode.at [ "p2id" ] Decode.string) s of
+                    case Decode.decodeString (Decode.at [ "p2Id" ] Decode.string) s of
                         Ok tchr ->
                             Just tchr
 
@@ -286,16 +314,16 @@ update msg model =
 
                 m =
                     if model.pid == Nothing then
-                        { model | pid = p2id }
+                        { model | pid = p2id, p1id = p1id, p2id = p2id }
 
                     else
-                        model
+                        { model | p1id = p1id, p2id = p2id }
 
                 a =
                     Debug.log "all of message" s
 
                 b =
-                    Debug.log "all of message" model
+                    Debug.log "all of Model" model
             in
             case message of
                 Ok res ->
@@ -311,7 +339,7 @@ update msg model =
                                 ( model, Cmd.none )
 
                     else if res == "typed" then
-                        ( { model | playerOneLeftChar = p1char, playerTwoLeftChar = p2char }, Cmd.none )
+                        update (Typed p1char p2char) m
 
                     else
                         -- ( { model | receivedMessage = s }, Cmd.none )
@@ -350,12 +378,25 @@ removeChar model addChar =
 removeMultiChar : Model -> String -> String
 removeMultiChar model addChar =
     let
+        chr =
+            if model.pid == model.p1id then
+                model.playerOneLeftChar
+
+            else
+                model.playerTwoLeftChar
+
         s =
-            String.left 1 model.playerOneLeftChar
+            String.left 1 chr
+
+        a =
+            Debug.log "model:  " model.playerOneLeftChar
+
+        b =
+            Debug.log "bool:  " model.playerOneLeftChar
     in
     case s == addChar of
         True ->
-            case String.uncons model.playerOneLeftChar of
+            case String.uncons chr of
                 Just ( h, tl ) ->
                     tl
 
@@ -363,7 +404,7 @@ removeMultiChar model addChar =
                     ""
 
         _ ->
-            model.playerOneLeftChar
+            chr
 
 
 
@@ -441,7 +482,6 @@ view model =
         , div [ class "inner", class <| toggleClass model.viewStatus "battle" ]
             [ h1 [] [ text "You are vimmer, you are vimmer!" ]
             , h1 [] [ text (timeStringFromMs model.spend) ]
-            , input [ class "ghost char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent" ] []
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]
             , input [ class "real char-length nes-input is-dark", value model.playerTwoLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []

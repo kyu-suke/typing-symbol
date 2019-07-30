@@ -15,5 +15,7 @@ type alias MainModel =
     , matchTicker : String
     , playerOneLeftChar : String
     , playerTwoLeftChar : String
+    , p1id : Maybe String
+    , p2id : Maybe String
     , pid : Maybe String
     }
