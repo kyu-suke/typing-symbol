@@ -4935,6 +4935,7 @@ var author$project$Main$init = function (_n0) {
 			isAlpha: true,
 			isNum: true,
 			matchTicker: '',
+			message: 'You are vimmer, you are vimmer!',
 			mode: 'single',
 			p1id: elm$core$Maybe$Nothing,
 			p2id: elm$core$Maybe$Nothing,
@@ -5914,6 +5915,7 @@ var author$project$Main$ChangeAtTitle = function (a) {
 	return {$: 'ChangeAtTitle', a: a};
 };
 var author$project$Main$End = {$: 'End'};
+var author$project$Main$EndMulti = {$: 'EndMulti'};
 var author$project$Main$MultiReady = function (a) {
 	return {$: 'MultiReady', a: a};
 };
@@ -5955,13 +5957,10 @@ var author$project$Main$removeChar = F2(
 			return model.targetChar;
 		}
 	});
-var elm$core$Debug$log = _Debug_log;
 var author$project$Main$removeMultiChar = F2(
 	function (model, addChar) {
 		var chr = _Utils_eq(model.pid, model.p1id) ? model.playerOneLeftChar : model.playerTwoLeftChar;
 		var s = A2(elm$core$String$left, 1, chr);
-		var b = A2(elm$core$Debug$log, 'bool:  ', model.playerOneLeftChar);
-		var a = A2(elm$core$Debug$log, 'model:  ', model.playerOneLeftChar);
 		var _n0 = _Utils_eq(s, addChar);
 		if (_n0) {
 			var _n1 = elm$core$String$uncons(chr);
@@ -6095,6 +6094,7 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
+var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
@@ -6423,15 +6423,10 @@ var author$project$Main$update = F2(
 				case 'Typed':
 					var p1char = msg.a;
 					var p2char = msg.b;
-					var _n2 = _Utils_eq(model.pid, model.p1id) ? _Utils_Tuple2(p1char, p2char) : _Utils_Tuple2(p2char, p1char);
-					var modelp1char = _n2.a;
-					var modelp2char = _n2.b;
-					var a = A2(elm$core$Debug$log, 'modelp1char:  ', modelp1char);
-					var b = A2(elm$core$Debug$log, 'modelp2char:  ', modelp2char);
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{playerOneLeftChar: modelp1char, playerTwoLeftChar: modelp2char}),
+							{playerOneLeftChar: p1char, playerTwoLeftChar: p2char}),
 						elm$core$Platform$Cmd$none);
 				case 'MultiReady':
 					var s = msg.a;
@@ -6534,8 +6529,7 @@ var author$project$Main$update = F2(
 						{p1id: p1id, p2id: p2id, pid: p2id}) : _Utils_update(
 						model,
 						{p1id: p1id, p2id: p2id});
-					var b = A2(elm$core$Debug$log, 'all of Model', model);
-					var a = A2(elm$core$Debug$log, 'all of message', s);
+					var a = A2(elm$core$Debug$log, 's:  ', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
 						if (res === 'wait') {
@@ -6564,7 +6558,29 @@ var author$project$Main$update = F2(
 									model = $temp$model;
 									continue update;
 								} else {
-									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+									if (res === 'battle') {
+										var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
+											$temp$model = m;
+										msg = $temp$msg;
+										model = $temp$model;
+										continue update;
+									} else {
+										if (res === 'end') {
+											var _n4 = A2(
+												author$project$Main$update,
+												A2(author$project$Main$Typed, p1char, p2char),
+												m);
+											var endModel = _n4.a;
+											var c = _n4.b;
+											var $temp$msg = author$project$Main$EndMulti,
+												$temp$model = endModel;
+											msg = $temp$msg;
+											model = $temp$model;
+											continue update;
+										} else {
+											return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+										}
+									}
 								}
 							}
 						}
@@ -6575,8 +6591,12 @@ var author$project$Main$update = F2(
 					var s = msg.a;
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				default:
+					var leftChar = _Utils_eq(model.pid, model.p1id) ? model.playerOneLeftChar : model.playerTwoLeftChar;
+					var message = (elm$core$String$length(leftChar) > 0) ? 'Lose, but you are Vimmer!' : 'Win, yes you are The Vimmer!';
 					return _Utils_Tuple2(
-						author$project$Single$end(model),
+						_Utils_update(
+							model,
+							{message: message, viewStatus: 'end'}),
 						elm$core$Platform$Cmd$none);
 			}
 		}
@@ -6598,6 +6618,13 @@ var author$project$Main$SetCharLength = function (a) {
 	return {$: 'SetCharLength', a: a};
 };
 var author$project$Main$Start = {$: 'Start'};
+var author$project$Main$toggleClass = F2(
+	function (status, className) {
+		return _Utils_eq(status, className) ? 'show' : 'hide';
+	});
+var author$project$Main$battleOrEnd = function (s) {
+	return ((A2(author$project$Main$toggleClass, s, 'battle') === 'show') || (A2(author$project$Main$toggleClass, s, 'end') === 'show')) ? 'show' : 'hide';
+};
 var elm$core$Basics$round = _Basics_round;
 var elm$core$Basics$truncate = _Basics_truncate;
 var elm$core$String$cons = _String_cons;
@@ -6655,10 +6682,6 @@ var author$project$Main$makeShareUrl = function (model) {
 	return 'https://twitter.com/intent/tweet?text=' + elm$url$Url$percentEncode(
 		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://qsk.netlify.com/')));
 };
-var author$project$Main$toggleClass = F2(
-	function (status, className) {
-		return _Utils_eq(status, className) ? 'show' : 'hide';
-	});
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
@@ -7101,7 +7124,7 @@ var author$project$Main$view = function (model) {
 					[
 						elm$html$Html$Attributes$class('inner'),
 						elm$html$Html$Attributes$class(
-						A2(author$project$Main$toggleClass, model.viewStatus, 'battle'))
+						author$project$Main$battleOrEnd(model.viewStatus))
 					]),
 				_List_fromArray(
 					[
@@ -7110,7 +7133,14 @@ var author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('You are vimmer, you are vimmer!')
+								elm$html$Html$text(model.message)
+							])),
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(model.viewStatus)
 							])),
 						A2(
 						elm$html$Html$h1,

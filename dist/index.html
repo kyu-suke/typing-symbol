@@ -23,14 +23,13 @@
   })
 
   app.ports.paringRoom.subscribe(function(data) {
-    console.log(data);
     try {
       ws = new WebSocket('ws://localhost:3000/');
     } catch (err) {
       console.error(err);
     }
     ws.onmessage = function (msg) {
-      console.log(msg)
+      console.log(msg.data)
       app.ports.receiveMessage.send(msg.data)
     }
   })

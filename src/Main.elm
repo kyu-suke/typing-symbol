@@ -58,6 +58,7 @@ init _ =
       , p1id = Nothing
       , p2id = Nothing
       , pid = Nothing
+      , message = "You are vimmer, you are vimmer!"
       }
     , Cmd.none
     )
@@ -250,21 +251,16 @@ update msg model =
                 ( model, sendMessage s )
 
         Typed p1char p2char ->
-            let
-                ( modelp1char, modelp2char ) =
-                    if model.pid == model.p1id then
-                        ( p1char, p2char )
-
-                    else
-                        ( p2char, p1char )
-
-                a =
-                    Debug.log "modelp1char:  " modelp1char
-
-                b =
-                    Debug.log "modelp2char:  " modelp2char
-            in
-            ( { model | playerOneLeftChar = modelp1char, playerTwoLeftChar = modelp2char }, Cmd.none )
+            --let
+            --    ( modelp1char, modelp2char ) =
+            --        if model.pid == model.p1id then
+            --            ( p1char, p2char )
+            --        else
+            --            ( p2char, p1char )
+            --    a =
+            --        Debug.log "p2char:  " p2char
+            --in
+            ( { model | playerOneLeftChar = p1char, playerTwoLeftChar = p2char }, Cmd.none )
 
         MultiReady s ->
             ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
@@ -274,6 +270,9 @@ update msg model =
 
         ReceiveMessage s ->
             let
+                a =
+                    Debug.log "s:  " s
+
                 message =
                     Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
@@ -318,12 +317,6 @@ update msg model =
 
                     else
                         { model | p1id = p1id, p2id = p2id }
-
-                a =
-                    Debug.log "all of message" s
-
-                b =
-                    Debug.log "all of Model" model
             in
             case message of
                 Ok res ->
@@ -341,6 +334,16 @@ update msg model =
                     else if res == "typed" then
                         update (Typed p1char p2char) m
 
+                    else if res == "battle" then
+                        update (Typed p1char p2char) m
+
+                    else if res == "end" then
+                        let
+                            ( endModel, c ) =
+                                update (Typed p1char p2char) m
+                        in
+                        update EndMulti endModel
+
                     else
                         -- ( { model | receivedMessage = s }, Cmd.none )
                         ( model, Cmd.none )
@@ -353,7 +356,22 @@ update msg model =
             ( model, Cmd.none )
 
         EndMulti ->
-            ( Single.end model, Cmd.none )
+            let
+                leftChar =
+                    if model.pid == model.p1id then
+                        model.playerOneLeftChar
+
+                    else
+                        model.playerTwoLeftChar
+
+                message =
+                    if String.length leftChar > 0 then
+                        "Lose, but you are Vimmer!"
+
+                    else
+                        "Win, yes you are The Vimmer!"
+            in
+            ( { model | viewStatus = "end", message = message }, Cmd.none )
 
 
 removeChar : Model -> String -> String
@@ -387,12 +405,6 @@ removeMultiChar model addChar =
 
         s =
             String.left 1 chr
-
-        a =
-            Debug.log "model:  " model.playerOneLeftChar
-
-        b =
-            Debug.log "bool:  " model.playerOneLeftChar
     in
     case s == addChar of
         True ->
@@ -479,8 +491,8 @@ view model =
         , div [ class "inner", class <| toggleClass model.viewStatus "multi" ]
             [ h1 [ class "matchTicker" ] [ text <| "Now Matching" ++ model.matchTicker ]
             ]
-        , div [ class "inner", class <| toggleClass model.viewStatus "battle" ]
-            [ h1 [] [ text "You are vimmer, you are vimmer!" ]
+        , div [ class "inner", class <| battleOrEnd model.viewStatus ]
+            [ h1 [] [ text model.message ]
             , h1 [] [ text (timeStringFromMs model.spend) ]
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]
@@ -497,6 +509,15 @@ makeShareUrl model =
 toggleClass : String -> String -> String
 toggleClass status className =
     if status == className then
+        "show"
+
+    else
+        "hide"
+
+
+battleOrEnd : String -> String
+battleOrEnd s =
+    if toggleClass s "battle" == "show" || toggleClass s "end" == "show" then
         "show"
 
     else
