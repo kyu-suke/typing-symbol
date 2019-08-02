@@ -6607,9 +6607,6 @@ var author$project$Main$CheckIsAlpha = function (a) {
 var author$project$Main$CheckIsNum = function (a) {
 	return {$: 'CheckIsNum', a: a};
 };
-var author$project$Main$CheckMultiMode = function (a) {
-	return {$: 'CheckMultiMode', a: a};
-};
 var author$project$Main$CheckSingleMode = function (a) {
 	return {$: 'CheckSingleMode', a: a};
 };
@@ -6852,32 +6849,6 @@ var author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												elm$html$Html$text('SINGLE')
-											]))
-									])),
-								A2(
-								elm$html$Html$label,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('modeLabel')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										elm$html$Html$input,
-										_List_fromArray(
-											[
-												elm$html$Html$Attributes$type_('radio'),
-												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
-												elm$html$Html$Attributes$checked(model.mode === 'multi'),
-												elm$html$Html$Events$onCheck(author$project$Main$CheckMultiMode)
-											]),
-										_List_Nil),
-										A2(
-										elm$html$Html$span,
-										_List_Nil,
-										_List_fromArray(
-											[
-												elm$html$Html$text('MULTI\u3000')
 											]))
 									]))
 							]))
@@ -7134,13 +7105,6 @@ var author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$text(model.message)
-							])),
-						A2(
-						elm$html$Html$h1,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text(model.viewStatus)
 							])),
 						A2(
 						elm$html$Html$h1,
