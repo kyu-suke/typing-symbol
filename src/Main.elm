@@ -439,11 +439,11 @@ view model =
                     [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "single"), onCheck CheckSingleMode ] []
                     , span [] [ text "SINGLE" ]
                     ]
-                --, label
-                --    [ class "modeLabel" ]
-                --    [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "multi"), onCheck CheckMultiMode ] []
-                --    , span [] [ text "MULTI\u{3000}" ]
-                --    ]
+                , label
+                    [ class "modeLabel" ]
+                    [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "multi"), onCheck CheckMultiMode ] []
+                    , span [] [ text "MULTI\u{3000}" ]
+                    ]
 
                 -- , label [ class "modeLabel" ]
                 --     [ input [ type_ "radio", class "nes-checkbox is-dark", checked (model.mode == "option"), onCheck CheckMultiMode ] []
