@@ -87,6 +87,7 @@ type Msg
     | Retry
       -- multi
       -- | Pairing
+    | MultiSpend Time.Posix
     | SendMessage String
     | ReceiveMessage String
     | InputMessage String
@@ -120,7 +121,7 @@ update msg model =
                         | targetChar = removeChar model position
                     }
 
-            else if model.viewStatus == "battle" then
+            else if model.viewStatus == "ready" || model.viewStatus == "battle" then
                 update (ChangeAtMulti string) model
 
             else
@@ -210,6 +211,13 @@ update msg model =
             init ()
 
         -- multi
+        MultiSpend _ ->
+            if model.viewStatus == "battle" then
+                ( { model | spend = model.spend + 1 }, Cmd.none )
+
+            else
+                ( model, Cmd.none )
+
         Matching ->
             ( model, Cmd.none )
 
@@ -263,7 +271,7 @@ update msg model =
             ( { model | playerOneLeftChar = p1char, playerTwoLeftChar = p2char }, Cmd.none )
 
         MultiReady s ->
-            ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
+            ( { model | viewStatus = "ready", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
 
         MultiStart s ->
             ( { model | viewStatus = "battle", targetChar = s, playerOneLeftChar = s, playerTwoLeftChar = s }, Cmd.none )
@@ -335,7 +343,7 @@ update msg model =
                         update (Typed p1char p2char) m
 
                     else if res == "battle" then
-                        update (Typed p1char p2char) m
+                        update (Typed p1char p2char) { m | viewStatus = "battle" }
 
                     else if res == "end" then
                         let
@@ -493,6 +501,7 @@ view model =
             ]
         , div [ class "inner", class <| battleOrEnd model.viewStatus ]
             [ h1 [] [ text model.message ]
+            , h1 [] [ text model.viewStatus ]
             , h1 [] [ text (timeStringFromMs model.spend) ]
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]
@@ -517,7 +526,7 @@ toggleClass status className =
 
 battleOrEnd : String -> String
 battleOrEnd s =
-    if toggleClass s "battle" == "show" || toggleClass s "end" == "show" then
+    if toggleClass s "battle" == "show" || toggleClass s "ready" == "show" || toggleClass s "end" == "show" then
         "show"
 
     else
@@ -533,6 +542,7 @@ subscriptions model =
     Sub.batch
         [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
         , Time.every 10 Spend
+        , Time.every 10 MultiSpend
         , Time.every 1000 NowMatching
         , receiveMessage ReceiveMessage
         ]

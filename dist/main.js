@@ -4951,6 +4951,9 @@ var author$project$Main$init = function (_n0) {
 var author$project$Main$Change = function (a) {
 	return {$: 'Change', a: a};
 };
+var author$project$Main$MultiSpend = function (a) {
+	return {$: 'MultiSpend', a: a};
+};
 var author$project$Main$NowMatching = function (a) {
 	return {$: 'NowMatching', a: a};
 };
@@ -5904,6 +5907,7 @@ var author$project$Main$subscriptions = function (model) {
 					author$project$Main$Change,
 					A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))),
 				A2(elm$time$Time$every, 10, author$project$Main$Spend),
+				A2(elm$time$Time$every, 10, author$project$Main$MultiSpend),
 				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching),
 				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage)
 			]));
@@ -6257,7 +6261,7 @@ var author$project$Main$update = F2(
 							model = $temp$model;
 							continue update;
 						} else {
-							if (model.viewStatus === 'battle') {
+							if ((model.viewStatus === 'ready') || (model.viewStatus === 'battle')) {
 								var $temp$msg = author$project$Main$ChangeAtMulti(string),
 									$temp$model = model;
 								msg = $temp$msg;
@@ -6392,6 +6396,12 @@ var author$project$Main$update = F2(
 						elm$core$Platform$Cmd$none);
 				case 'Retry':
 					return author$project$Main$init(_Utils_Tuple0);
+				case 'MultiSpend':
+					return (model.viewStatus === 'battle') ? _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{spend: model.spend + 1}),
+						elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'Matching':
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'Compete':
@@ -6433,7 +6443,7 @@ var author$project$Main$update = F2(
 					return _Utils_Tuple2(
 						_Utils_update(
 							model,
-							{playerOneLeftChar: s, playerTwoLeftChar: s, targetChar: s, viewStatus: 'battle'}),
+							{playerOneLeftChar: s, playerTwoLeftChar: s, targetChar: s, viewStatus: 'ready'}),
 						elm$core$Platform$Cmd$none);
 				case 'MultiStart':
 					var s = msg.a;
@@ -6560,7 +6570,9 @@ var author$project$Main$update = F2(
 								} else {
 									if (res === 'battle') {
 										var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
-											$temp$model = m;
+											$temp$model = _Utils_update(
+											m,
+											{viewStatus: 'battle'});
 										msg = $temp$msg;
 										model = $temp$model;
 										continue update;
@@ -6607,6 +6619,9 @@ var author$project$Main$CheckIsAlpha = function (a) {
 var author$project$Main$CheckIsNum = function (a) {
 	return {$: 'CheckIsNum', a: a};
 };
+var author$project$Main$CheckMultiMode = function (a) {
+	return {$: 'CheckMultiMode', a: a};
+};
 var author$project$Main$CheckSingleMode = function (a) {
 	return {$: 'CheckSingleMode', a: a};
 };
@@ -6620,7 +6635,7 @@ var author$project$Main$toggleClass = F2(
 		return _Utils_eq(status, className) ? 'show' : 'hide';
 	});
 var author$project$Main$battleOrEnd = function (s) {
-	return ((A2(author$project$Main$toggleClass, s, 'battle') === 'show') || (A2(author$project$Main$toggleClass, s, 'end') === 'show')) ? 'show' : 'hide';
+	return ((A2(author$project$Main$toggleClass, s, 'battle') === 'show') || ((A2(author$project$Main$toggleClass, s, 'ready') === 'show') || (A2(author$project$Main$toggleClass, s, 'end') === 'show'))) ? 'show' : 'hide';
 };
 var elm$core$Basics$round = _Basics_round;
 var elm$core$Basics$truncate = _Basics_truncate;
@@ -6849,6 +6864,32 @@ var author$project$Main$view = function (model) {
 										_List_fromArray(
 											[
 												elm$html$Html$text('SINGLE')
+											]))
+									])),
+								A2(
+								elm$html$Html$label,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('modeLabel')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$input,
+										_List_fromArray(
+											[
+												elm$html$Html$Attributes$type_('radio'),
+												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+												elm$html$Html$Attributes$checked(model.mode === 'multi'),
+												elm$html$Html$Events$onCheck(author$project$Main$CheckMultiMode)
+											]),
+										_List_Nil),
+										A2(
+										elm$html$Html$span,
+										_List_Nil,
+										_List_fromArray(
+											[
+												elm$html$Html$text('MULTI\u3000')
 											]))
 									]))
 							]))
@@ -7105,6 +7146,13 @@ var author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$text(model.message)
+							])),
+						A2(
+						elm$html$Html$h1,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text(model.viewStatus)
 							])),
 						A2(
 						elm$html$Html$h1,
