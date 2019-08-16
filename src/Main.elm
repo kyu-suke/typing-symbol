@@ -108,17 +108,13 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Change string ->
-            let
-                position =
-                    string
-            in
             if model.viewStatus == "title" then
                 update (ChangeAtTitle string) model
 
             else if model.viewStatus == "running" then
                 update End
                     { model
-                        | targetChar = removeChar model position
+                        | targetChar = removeChar model string
                     }
 
             else if model.viewStatus == "ready" || model.viewStatus == "battle" then
@@ -128,7 +124,18 @@ update msg model =
                 ( model, Cmd.none )
 
         ChangeAtTitle string ->
-            if string == "Enter" then
+            if string == "ArrowDown" || string == "ArrowUp" || string == "j" || string == "k" then
+                let
+                    a =
+                        Debug.log "p2char:  " model.mode
+                in
+                if model.mode == "single" then
+                    update (CheckMultiMode True) model
+
+                else
+                    update (CheckSingleMode True) model
+
+            else if string == "Enter" then
                 update (SelectMode model.mode) model
 
             else

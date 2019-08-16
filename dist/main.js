@@ -5918,6 +5918,12 @@ var author$project$Main$ChangeAtMulti = function (a) {
 var author$project$Main$ChangeAtTitle = function (a) {
 	return {$: 'ChangeAtTitle', a: a};
 };
+var author$project$Main$CheckMultiMode = function (a) {
+	return {$: 'CheckMultiMode', a: a};
+};
+var author$project$Main$CheckSingleMode = function (a) {
+	return {$: 'CheckSingleMode', a: a};
+};
 var author$project$Main$End = {$: 'End'};
 var author$project$Main$EndMulti = {$: 'EndMulti'};
 var author$project$Main$MultiReady = function (a) {
@@ -6242,7 +6248,6 @@ var author$project$Main$update = F2(
 			switch (msg.$) {
 				case 'Change':
 					var string = msg.a;
-					var position = string;
 					if (model.viewStatus === 'title') {
 						var $temp$msg = author$project$Main$ChangeAtTitle(string),
 							$temp$model = model;
@@ -6255,7 +6260,7 @@ var author$project$Main$update = F2(
 								$temp$model = _Utils_update(
 								model,
 								{
-									targetChar: A2(author$project$Main$removeChar, model, position)
+									targetChar: A2(author$project$Main$removeChar, model, string)
 								});
 							msg = $temp$msg;
 							model = $temp$model;
@@ -6274,14 +6279,31 @@ var author$project$Main$update = F2(
 					}
 				case 'ChangeAtTitle':
 					var string = msg.a;
-					if (string === 'Enter') {
-						var $temp$msg = author$project$Main$SelectMode(model.mode),
-							$temp$model = model;
-						msg = $temp$msg;
-						model = $temp$model;
-						continue update;
+					if ((string === 'ArrowDown') || ((string === 'ArrowUp') || ((string === 'j') || (string === 'k')))) {
+						var a = A2(elm$core$Debug$log, 'p2char:  ', model.mode);
+						if (model.mode === 'single') {
+							var $temp$msg = author$project$Main$CheckMultiMode(true),
+								$temp$model = model;
+							msg = $temp$msg;
+							model = $temp$model;
+							continue update;
+						} else {
+							var $temp$msg = author$project$Main$CheckSingleMode(true),
+								$temp$model = model;
+							msg = $temp$msg;
+							model = $temp$model;
+							continue update;
+						}
 					} else {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						if (string === 'Enter') {
+							var $temp$msg = author$project$Main$SelectMode(model.mode),
+								$temp$model = model;
+							msg = $temp$msg;
+							model = $temp$model;
+							continue update;
+						} else {
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
 					}
 				case 'ChangeAtMulti':
 					var string = msg.a;
@@ -6618,12 +6640,6 @@ var author$project$Main$CheckIsAlpha = function (a) {
 };
 var author$project$Main$CheckIsNum = function (a) {
 	return {$: 'CheckIsNum', a: a};
-};
-var author$project$Main$CheckMultiMode = function (a) {
-	return {$: 'CheckMultiMode', a: a};
-};
-var author$project$Main$CheckSingleMode = function (a) {
-	return {$: 'CheckSingleMode', a: a};
 };
 var author$project$Main$Retry = {$: 'Retry'};
 var author$project$Main$SetCharLength = function (a) {
