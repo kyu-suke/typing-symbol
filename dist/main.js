@@ -6705,7 +6705,7 @@ var author$project$Main$timeStringFromMs = function (ms) {
 var elm$url$Url$percentEncode = _Url_percentEncode;
 var author$project$Main$makeShareUrl = function (model) {
 	return 'https://twitter.com/intent/tweet?text=' + elm$url$Url$percentEncode(
-		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://qsk.netlify.com/')));
+		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://typingame.netlify.com')));
 };
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');

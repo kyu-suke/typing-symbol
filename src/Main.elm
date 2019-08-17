@@ -511,7 +511,7 @@ view model =
 
 makeShareUrl : Model -> String
 makeShareUrl model =
-    "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | https://qsk.netlify.com/")
+    "https://twitter.com/intent/tweet?text=" ++ (Url.percentEncode <| String.fromInt model.charLength ++ "文字を" ++ timeStringFromMs model.spend ++ "秒で打ち込んだ | https://typingame.netlify.com")
 
 
 toggleClass : String -> String -> String
