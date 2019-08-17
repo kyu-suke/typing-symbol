@@ -125,10 +125,6 @@ update msg model =
 
         ChangeAtTitle string ->
             if string == "ArrowDown" || string == "ArrowUp" || string == "j" || string == "k" then
-                let
-                    a =
-                        Debug.log "p2char:  " model.mode
-                in
                 if model.mode == "single" then
                     update (CheckMultiMode True) model
 
@@ -285,9 +281,6 @@ update msg model =
 
         ReceiveMessage s ->
             let
-                a =
-                    Debug.log "s:  " s
-
                 message =
                     Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
@@ -508,7 +501,6 @@ view model =
             ]
         , div [ class "inner", class <| battleOrEnd model.viewStatus ]
             [ h1 [] [ text model.message ]
-            , h1 [] [ text model.viewStatus ]
             , h1 [] [ text (timeStringFromMs model.spend) ]
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]

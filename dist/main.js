@@ -6104,7 +6104,6 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
-var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
@@ -6280,7 +6279,6 @@ var author$project$Main$update = F2(
 				case 'ChangeAtTitle':
 					var string = msg.a;
 					if ((string === 'ArrowDown') || ((string === 'ArrowUp') || ((string === 'j') || (string === 'k')))) {
-						var a = A2(elm$core$Debug$log, 'p2char:  ', model.mode);
 						if (model.mode === 'single') {
 							var $temp$msg = author$project$Main$CheckMultiMode(true),
 								$temp$model = model;
@@ -6561,7 +6559,6 @@ var author$project$Main$update = F2(
 						{p1id: p1id, p2id: p2id, pid: p2id}) : _Utils_update(
 						model,
 						{p1id: p1id, p2id: p2id});
-					var a = A2(elm$core$Debug$log, 's:  ', s);
 					if (message.$ === 'Ok') {
 						var res = message.a;
 						if (res === 'wait') {
@@ -7162,13 +7159,6 @@ var author$project$Main$view = function (model) {
 						_List_fromArray(
 							[
 								elm$html$Html$text(model.message)
-							])),
-						A2(
-						elm$html$Html$h1,
-						_List_Nil,
-						_List_fromArray(
-							[
-								elm$html$Html$text(model.viewStatus)
 							])),
 						A2(
 						elm$html$Html$h1,
