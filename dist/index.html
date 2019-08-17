@@ -30,7 +30,6 @@
       console.error(err);
     }
     ws.onmessage = function (msg) {
-      console.log(msg.data)
       app.ports.receiveMessage.send(msg.data)
     }
   })
