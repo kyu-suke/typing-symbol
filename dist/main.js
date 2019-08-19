@@ -4952,6 +4952,9 @@ var author$project$Main$init = function (_n0) {
 var author$project$Main$Change = function (a) {
 	return {$: 'Change', a: a};
 };
+var author$project$Main$CloseConnection = function (a) {
+	return {$: 'CloseConnection', a: a};
+};
 var author$project$Main$MultiSpend = function (a) {
 	return {$: 'MultiSpend', a: a};
 };
@@ -4965,6 +4968,7 @@ var author$project$Main$Spend = function (a) {
 	return {$: 'Spend', a: a};
 };
 var elm$json$Json$Decode$string = _Json_decodeString;
+var author$project$Main$closeConnectionMsg = _Platform_incomingPort('closeConnectionMsg', elm$json$Json$Decode$string);
 var author$project$Main$receiveMessage = _Platform_incomingPort('receiveMessage', elm$json$Json$Decode$string);
 var elm$browser$Browser$Events$Document = {$: 'Document'};
 var elm$browser$Browser$Events$MySub = F3(
@@ -5910,7 +5914,8 @@ var author$project$Main$subscriptions = function (model) {
 				A2(elm$time$Time$every, 10, author$project$Main$Spend),
 				A2(elm$time$Time$every, 10, author$project$Main$MultiSpend),
 				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching),
-				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage)
+				author$project$Main$receiveMessage(author$project$Main$ReceiveMessage),
+				author$project$Main$closeConnectionMsg(author$project$Main$CloseConnection)
 			]));
 };
 var author$project$Main$ChangeAtMulti = function (a) {
@@ -5945,6 +5950,11 @@ var author$project$Main$Typed = F2(
 		return {$: 'Typed', a: a, b: b};
 	});
 var elm$json$Json$Encode$null = _Json_encodeNull;
+var author$project$Main$closeConnection = _Platform_outgoingPort(
+	'closeConnection',
+	function ($) {
+		return elm$json$Json$Encode$null;
+	});
 var author$project$Main$paringRoom = _Platform_outgoingPort(
 	'paringRoom',
 	function ($) {
@@ -6105,7 +6115,6 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
-var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
@@ -6561,13 +6570,12 @@ var author$project$Main$update = F2(
 						{p1id: p1id, p2id: p2id, pid: p2id}) : _Utils_update(
 						model,
 						{p1id: p1id, p2id: p2id});
-					var a = A2(elm$core$Debug$log, 'p2char:  ', p2char);
 					if (s === 'the other one is disconnected!') {
 						return _Utils_Tuple2(
 							_Utils_update(
 								model,
 								{action: 'closeConnect'}),
-							elm$core$Platform$Cmd$none);
+							author$project$Main$closeConnection(_Utils_Tuple0));
 					} else {
 						if (message.$ === 'Ok') {
 							var res = message.a;
@@ -6632,7 +6640,7 @@ var author$project$Main$update = F2(
 				case 'InputMessage':
 					var s = msg.a;
 					return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-				default:
+				case 'EndMulti':
 					var leftChar = _Utils_eq(model.pid, model.p1id) ? model.playerOneLeftChar : model.playerTwoLeftChar;
 					var message = (elm$core$String$length(leftChar) > 0) ? 'Lose, but you are Vimmer!' : 'Win, yes you are The Vimmer!';
 					return _Utils_Tuple2(
@@ -6640,6 +6648,12 @@ var author$project$Main$update = F2(
 							model,
 							{message: message, viewStatus: 'end'}),
 						elm$core$Platform$Cmd$none);
+				default:
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{action: 'closeConnect'}),
+						author$project$Main$closeConnection(_Utils_Tuple0));
 			}
 		}
 	});
@@ -6718,6 +6732,7 @@ var author$project$Main$makeShareUrl = function (model) {
 	return 'https://twitter.com/intent/tweet?text=' + elm$url$Url$percentEncode(
 		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://typingame.netlify.com')));
 };
+var elm$core$Basics$neq = _Utils_notEqual;
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
 var elm$html$Html$h1 = _VirtualDom_node('h1');
@@ -6753,6 +6768,7 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			elm$json$Json$Encode$string(string));
 	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		elm$html$Html$Attributes$stringProperty,
@@ -7211,7 +7227,8 @@ var author$project$Main$view = function (model) {
 				elm$html$Html$div,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('connectionWindow nes-container is-rounded is-dark')
+						elm$html$Html$Attributes$class('connectionWindow nes-container is-rounded is-dark'),
+						elm$html$Html$Attributes$hidden(model.action !== 'closeConnect')
 					]),
 				_List_fromArray(
 					[

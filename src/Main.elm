@@ -31,7 +31,13 @@ port paringRoom : () -> Cmd msg
 port sendMessage : String -> Cmd msg
 
 
+port closeConnection : () -> Cmd msg
+
+
 port receiveMessage : (String -> msg) -> Sub msg
+
+
+port closeConnectionMsg : (String -> msg) -> Sub msg
 
 
 
@@ -103,6 +109,7 @@ type Msg
     | Typed String String
     | MultiReady String
     | MultiStart String
+    | CloseConnection String
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -282,9 +289,6 @@ update msg model =
 
         ReceiveMessage s ->
             let
-                a =
-                    Debug.log "p2char:  " p2char
-
                 message =
                     Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
@@ -331,7 +335,7 @@ update msg model =
                         { model | p1id = p1id, p2id = p2id }
             in
             if s == "the other one is disconnected!" then
-                ( { model | action = "closeConnect" }, Cmd.none )
+                ( { model | action = "closeConnect" }, closeConnection () )
 
             else
                 case message of
@@ -388,6 +392,9 @@ update msg model =
                         "Win, yes you are The Vimmer!"
             in
             ( { model | viewStatus = "end", message = message }, Cmd.none )
+
+        CloseConnection _ ->
+            ( { model | action = "closeConnect" }, closeConnection () )
 
 
 removeChar : Model -> String -> String
@@ -514,7 +521,7 @@ view model =
             , h1 [] [ text "" ]
             , input [ class "real char-length nes-input is-dark", value model.playerTwoLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             ]
-        , div [ class "connectionWindow nes-container is-rounded is-dark" ]
+        , div [ class "connectionWindow nes-container is-rounded is-dark", hidden <| model.action /= "closeConnect" ]
             [ p [] [ text "Connection is closed." ]
             , p [] [ text "Retry matching." ]
             , p [] [ a [ class "back", onClick Retry ] [ text "back" ] ]
@@ -557,6 +564,7 @@ subscriptions model =
         , Time.every 10 MultiSpend
         , Time.every 1000 NowMatching
         , receiveMessage ReceiveMessage
+        , closeConnectionMsg CloseConnection
         ]
 
 
