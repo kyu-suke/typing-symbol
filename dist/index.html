@@ -25,13 +25,16 @@
 
   app.ports.closeConnection.subscribe(function(data) {
     clearInterval(intervalId)
-    ws = null
+    if (ws) {
+      ws.close()
+      ws = null
+    }
   })
 
   app.ports.paringRoom.subscribe(function(data) {
     try {
-      ws = new WebSocket('wss://typing.quxquux.com:3000/');
-      //ws = new WebSocket('wss://localhost:3000/');
+      //ws = new WebSocket('wss://typing.quxquux.com:3000/');
+      ws = new WebSocket('wss://localhost:3000/');
       intervalId = setInterval(() => {
         if (ws.readyState === 3) {
           app.ports.closeConnectionMsg.send("")

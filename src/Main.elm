@@ -11,6 +11,7 @@ import Json.Encode
 import Model exposing (MainModel)
 import Random exposing (..)
 import Single exposing (..)
+import String exposing (replace)
 import Time exposing (..)
 import Url exposing (..)
 
@@ -67,7 +68,7 @@ init _ =
       , message = "You are vimmer, you are vimmer!"
       , action = ""
       }
-    , Cmd.none
+    , closeConnection ()
     )
 
 
@@ -267,7 +268,7 @@ update msg model =
                 --    }
 
             else
-                ( model, sendMessage s )
+                ( model, sendMessage <| String.replace "\"" "\\\"" <| String.replace "\\" "\\\\" s )
 
         Typed p1char p2char ->
             --let
@@ -520,6 +521,9 @@ view model =
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]
             , input [ class "real char-length nes-input is-dark", value model.playerTwoLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
+            , div [ hidden <| model.viewStatus /= "end" ]
+                [ input [ class "nes-btn retry-multi", type_ "button", value "retry", onClick Retry ] []
+                ]
             ]
         , div [ class "connectionWindow nes-container is-rounded is-dark", hidden <| model.action /= "closeConnect" ]
             [ p [] [ text "Connection is closed." ]
