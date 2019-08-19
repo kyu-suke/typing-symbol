@@ -24,8 +24,14 @@
 
   app.ports.paringRoom.subscribe(function(data) {
     try {
-      ws = new WebSocket('wss://typing.quxquux.com:3000/');
-      //ws = new WebSocket('wss://localhost:3000/');
+      //ws = new WebSocket('wss://typing.quxquux.com:3000/');
+      ws = new WebSocket('wss://localhost:3000/');
+        setInterval(() => {
+            if (ws.readyState === 3) {
+              alert("connection is closed. Retry matching.")
+              location.href=""
+            }
+        }, 3000)
     } catch (err) {
       console.error(err);
     }

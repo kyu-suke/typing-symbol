@@ -4929,6 +4929,7 @@ var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var author$project$Main$init = function (_n0) {
 	return _Utils_Tuple2(
 		{
+			action: '',
 			charLength: 20,
 			charSet: elm$core$Array$fromList(
 				_Utils_ap(author$project$Single$numSet, author$project$Single$alphaSet)),
@@ -6104,6 +6105,7 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
+var elm$core$Debug$log = _Debug_log;
 var elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3(elm$core$List$foldr, elm$json$Json$Decode$field, decoder, fields);
@@ -6559,64 +6561,73 @@ var author$project$Main$update = F2(
 						{p1id: p1id, p2id: p2id, pid: p2id}) : _Utils_update(
 						model,
 						{p1id: p1id, p2id: p2id});
-					if (message.$ === 'Ok') {
-						var res = message.a;
-						if (res === 'wait') {
-							return _Utils_Tuple2(
-								_Utils_update(
-									model,
-									{pid: p1id}),
-								elm$core$Platform$Cmd$none);
-						} else {
-							if (res === 'pairing') {
-								if (targetChar.$ === 'Ok') {
-									var tchr = targetChar.a;
-									var $temp$msg = author$project$Main$MultiReady(tchr),
-										$temp$model = m;
-									msg = $temp$msg;
-									model = $temp$model;
-									continue update;
-								} else {
-									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
-								}
+					var a = A2(elm$core$Debug$log, 'p2char:  ', p2char);
+					if (s === 'the other one is disconnected!') {
+						return _Utils_Tuple2(
+							_Utils_update(
+								model,
+								{action: 'closeConnect'}),
+							elm$core$Platform$Cmd$none);
+					} else {
+						if (message.$ === 'Ok') {
+							var res = message.a;
+							if (res === 'wait') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{pid: p1id}),
+									elm$core$Platform$Cmd$none);
 							} else {
-								if (res === 'typed') {
-									var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
-										$temp$model = m;
-									msg = $temp$msg;
-									model = $temp$model;
-									continue update;
-								} else {
-									if (res === 'battle') {
-										var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
-											$temp$model = _Utils_update(
-											m,
-											{viewStatus: 'battle'});
+								if (res === 'pairing') {
+									if (targetChar.$ === 'Ok') {
+										var tchr = targetChar.a;
+										var $temp$msg = author$project$Main$MultiReady(tchr),
+											$temp$model = m;
 										msg = $temp$msg;
 										model = $temp$model;
 										continue update;
 									} else {
-										if (res === 'end') {
-											var _n4 = A2(
-												author$project$Main$update,
-												A2(author$project$Main$Typed, p1char, p2char),
-												m);
-											var endModel = _n4.a;
-											var c = _n4.b;
-											var $temp$msg = author$project$Main$EndMulti,
-												$temp$model = endModel;
+										return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+									}
+								} else {
+									if (res === 'typed') {
+										var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
+											$temp$model = m;
+										msg = $temp$msg;
+										model = $temp$model;
+										continue update;
+									} else {
+										if (res === 'battle') {
+											var $temp$msg = A2(author$project$Main$Typed, p1char, p2char),
+												$temp$model = _Utils_update(
+												m,
+												{viewStatus: 'battle'});
 											msg = $temp$msg;
 											model = $temp$model;
 											continue update;
 										} else {
-											return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+											if (res === 'end') {
+												var _n4 = A2(
+													author$project$Main$update,
+													A2(author$project$Main$Typed, p1char, p2char),
+													m);
+												var endModel = _n4.a;
+												var c = _n4.b;
+												var $temp$msg = author$project$Main$EndMulti,
+													$temp$model = endModel;
+												msg = $temp$msg;
+												model = $temp$model;
+												continue update;
+											} else {
+												return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+											}
 										}
 									}
 								}
 							}
+						} else {
+							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 						}
-					} else {
-						return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 					}
 				case 'InputMessage':
 					var s = msg.a;
@@ -7195,6 +7206,46 @@ var author$project$Main$view = function (model) {
 								A2(elm$html$Html$Attributes$attribute, 'disabled', '')
 							]),
 						_List_Nil)
+					])),
+				A2(
+				elm$html$Html$div,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('connectionWindow nes-container is-rounded is-dark')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Connection is closed.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								elm$html$Html$text('Retry matching.')
+							])),
+						A2(
+						elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								A2(
+								elm$html$Html$a,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('back'),
+										elm$html$Html$Events$onClick(author$project$Main$Retry)
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text('back')
+									]))
+							]))
 					]))
 			]));
 };

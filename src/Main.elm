@@ -59,6 +59,7 @@ init _ =
       , p2id = Nothing
       , pid = Nothing
       , message = "You are vimmer, you are vimmer!"
+      , action = ""
       }
     , Cmd.none
     )
@@ -281,6 +282,9 @@ update msg model =
 
         ReceiveMessage s ->
             let
+                a =
+                    Debug.log "p2char:  " p2char
+
                 message =
                     Decode.decodeString (Decode.at [ "message" ] Decode.string) s
 
@@ -326,38 +330,42 @@ update msg model =
                     else
                         { model | p1id = p1id, p2id = p2id }
             in
-            case message of
-                Ok res ->
-                    if res == "wait" then
-                        ( { model | pid = p1id }, Cmd.none )
+            if s == "the other one is disconnected!" then
+                ( { model | action = "closeConnect" }, Cmd.none )
 
-                    else if res == "pairing" then
-                        case targetChar of
-                            Ok tchr ->
-                                update (MultiReady tchr) m
+            else
+                case message of
+                    Ok res ->
+                        if res == "wait" then
+                            ( { model | pid = p1id }, Cmd.none )
 
-                            _ ->
-                                ( model, Cmd.none )
+                        else if res == "pairing" then
+                            case targetChar of
+                                Ok tchr ->
+                                    update (MultiReady tchr) m
 
-                    else if res == "typed" then
-                        update (Typed p1char p2char) m
+                                _ ->
+                                    ( model, Cmd.none )
 
-                    else if res == "battle" then
-                        update (Typed p1char p2char) { m | viewStatus = "battle" }
+                        else if res == "typed" then
+                            update (Typed p1char p2char) m
 
-                    else if res == "end" then
-                        let
-                            ( endModel, c ) =
-                                update (Typed p1char p2char) m
-                        in
-                        update EndMulti endModel
+                        else if res == "battle" then
+                            update (Typed p1char p2char) { m | viewStatus = "battle" }
 
-                    else
-                        -- ( { model | receivedMessage = s }, Cmd.none )
+                        else if res == "end" then
+                            let
+                                ( endModel, c ) =
+                                    update (Typed p1char p2char) m
+                            in
+                            update EndMulti endModel
+
+                        else
+                            -- ( { model | receivedMessage = s }, Cmd.none )
+                            ( model, Cmd.none )
+
+                    _ ->
                         ( model, Cmd.none )
-
-                _ ->
-                    ( model, Cmd.none )
 
         InputMessage s ->
             -- ( { model | inputMessage = s }, Cmd.none )
@@ -505,6 +513,11 @@ view model =
             , input [ class "real char-length nes-input is-dark", value model.playerOneLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
             , h1 [] [ text "" ]
             , input [ class "real char-length nes-input is-dark", value model.playerTwoLeftChar, style "caret-color" "transparent", attribute "disabled" "" ] []
+            ]
+        , div [ class "connectionWindow nes-container is-rounded is-dark" ]
+            [ p [] [ text "Connection is closed." ]
+            , p [] [ text "Retry matching." ]
+            , p [] [ a [ class "back", onClick Retry ] [ text "back" ] ]
             ]
         ]
 

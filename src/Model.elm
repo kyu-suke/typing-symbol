@@ -19,4 +19,5 @@ type alias MainModel =
     , p2id : Maybe String
     , pid : Maybe String
     , message : String
+    , action : String
     }

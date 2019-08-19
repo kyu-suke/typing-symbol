@@ -1,10 +1,10 @@
 body {
 	height: 100vh;
 	width: 100%;
-	background: black;
-	color: white;
 	white-space: nowrap;
 	overflow: hidden;
+	background: #212529;
+	color: #fff;
 }
 
 .content {
@@ -41,7 +41,7 @@ body {
 
 .char-length.nes-input.is-dark {
 	width: 200px;
-	background: black;
+	background: #212529;
 	text-align: right;
 	/*color: white;
 	border: 0;
@@ -110,4 +110,11 @@ i {
 	min-width: 400px;
 	max-width: 400px;
 	text-align: left;
+}
+.connectionWindow.nes-container {
+	position: absolute;
+}
+
+.back:before {
+	content: "*";
 }
