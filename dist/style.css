@@ -81,10 +81,6 @@ i {
 .time {
 	margin: 15px;
 }
-.retry {
-	position: relative;
-	bottom: 25px;
-}
 
 .modeLabel {
 	display: block;
@@ -117,4 +113,43 @@ i {
 
 .back:before {
 	content: "*";
+}
+
+.options {
+	display: flex;
+}
+
+.theend {
+	max-width: 800px;
+	min-width: 600px;
+	overflow: hidden;
+	border: 8px solid white;
+	border-radius: 8px;
+	padding: 4px;
+	margin: 0 5px;
+	font-size: 50px;
+	display: block;
+	height: 121px;
+	line-height: 100px;
+	position: relative;
+	top: 10px;
+}
+.retry {
+	position: relative;
+	bottom: 25px;
+}
+
+.options .retry {
+	width: 100px;
+	height: 45px;
+	margin-top: 15px;
+	bottom: 0;
+}
+
+.options .time {
+	margin-left: 28%;
+}
+
+a.twitter {
+	margin-top: 14px;
 }

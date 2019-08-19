@@ -7046,7 +7046,7 @@ var author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('<C-r> 3fd zfj')
+								elm$html$Html$text('type, type, type')
 							])),
 						A2(
 						elm$html$Html$input,
@@ -7091,34 +7091,37 @@ var author$project$Main$view = function (model) {
 						_List_Nil,
 						_List_fromArray(
 							[
-								elm$html$Html$text('<C-r> 3fd zfj')
+								elm$html$Html$text('vim')
 							])),
 						A2(
 						elm$html$Html$span,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('target-char')
+								elm$html$Html$Attributes$class('theend')
 							]),
 						_List_fromArray(
 							[
 								elm$html$Html$text('the end.')
 							])),
 						A2(
-						elm$html$Html$h1,
+						elm$html$Html$div,
 						_List_fromArray(
 							[
-								elm$html$Html$Attributes$class('time')
+								elm$html$Html$Attributes$class('options')
 							]),
 						_List_fromArray(
 							[
-								elm$html$Html$text(
-								author$project$Main$timeStringFromMs(model.spend))
-							])),
-						A2(
-						elm$html$Html$div,
-						_List_Nil,
-						_List_fromArray(
-							[
+								A2(
+								elm$html$Html$h1,
+								_List_fromArray(
+									[
+										elm$html$Html$Attributes$class('time')
+									]),
+								_List_fromArray(
+									[
+										elm$html$Html$text(
+										author$project$Main$timeStringFromMs(model.spend))
+									])),
 								A2(
 								elm$html$Html$input,
 								_List_fromArray(
@@ -7133,6 +7136,7 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$a,
 								_List_fromArray(
 									[
+										elm$html$Html$Attributes$class('twitter'),
 										elm$html$Html$Attributes$target('_blank'),
 										elm$html$Html$Attributes$href(
 										author$project$Main$makeShareUrl(model))
@@ -7143,7 +7147,7 @@ var author$project$Main$view = function (model) {
 										elm$html$Html$i,
 										_List_fromArray(
 											[
-												elm$html$Html$Attributes$class('nes-icon twitter is-large')
+												elm$html$Html$Attributes$class('nes-icon twitter is-medium')
 											]),
 										_List_Nil)
 									]))
