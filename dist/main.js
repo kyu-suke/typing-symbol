@@ -4941,12 +4941,14 @@ var author$project$Main$init = function (_n0) {
 			isNum: true,
 			matchTicker: '',
 			message: 'You are vimmer, you are vimmer!',
+			missed: false,
 			mode: 'single',
 			p1id: elm$core$Maybe$Nothing,
 			p2id: elm$core$Maybe$Nothing,
 			pid: elm$core$Maybe$Nothing,
 			playerOneLeftChar: '',
 			playerTwoLeftChar: '',
+			selected: 'charLength',
 			spend: 0,
 			targetChar: '',
 			viewStatus: 'title'
@@ -4958,6 +4960,9 @@ var author$project$Main$Change = function (a) {
 };
 var author$project$Main$CloseConnection = function (a) {
 	return {$: 'CloseConnection', a: a};
+};
+var author$project$Main$MissReset = function (a) {
+	return {$: 'MissReset', a: a};
 };
 var author$project$Main$MultiSpend = function (a) {
 	return {$: 'MultiSpend', a: a};
@@ -5915,6 +5920,7 @@ var author$project$Main$subscriptions = function (model) {
 					elm$json$Json$Decode$map,
 					author$project$Main$Change,
 					A2(elm$json$Json$Decode$field, 'key', elm$json$Json$Decode$string))),
+				A2(elm$time$Time$every, 400, author$project$Main$MissReset),
 				A2(elm$time$Time$every, 10, author$project$Main$Spend),
 				A2(elm$time$Time$every, 10, author$project$Main$MultiSpend),
 				A2(elm$time$Time$every, 1000, author$project$Main$NowMatching),
@@ -5927,6 +5933,15 @@ var author$project$Main$ChangeAtMulti = function (a) {
 };
 var author$project$Main$ChangeAtTitle = function (a) {
 	return {$: 'ChangeAtTitle', a: a};
+};
+var author$project$Main$ChangeConfig = function (a) {
+	return {$: 'ChangeConfig', a: a};
+};
+var author$project$Main$CheckIsAlpha = function (a) {
+	return {$: 'CheckIsAlpha', a: a};
+};
+var author$project$Main$CheckIsNum = function (a) {
+	return {$: 'CheckIsNum', a: a};
 };
 var author$project$Main$CheckMultiMode = function (a) {
 	return {$: 'CheckMultiMode', a: a};
@@ -5949,6 +5964,7 @@ var author$project$Main$SendMessage = function (a) {
 var author$project$Main$SetChar = function (a) {
 	return {$: 'SetChar', a: a};
 };
+var author$project$Main$Start = {$: 'Start'};
 var author$project$Main$Typed = F2(
 	function (a, b) {
 		return {$: 'Typed', a: a, b: b};
@@ -6113,6 +6129,7 @@ var elm$core$Array$length = function (_n0) {
 	var len = _n0.a;
 	return len;
 };
+var elm$core$Basics$not = _Basics_not;
 var elm$core$Platform$Cmd$batch = _Platform_batch;
 var elm$core$Platform$Cmd$none = elm$core$Platform$Cmd$batch(_List_Nil);
 var elm$core$String$replace = F3(
@@ -6273,12 +6290,12 @@ var author$project$Main$update = F2(
 						continue update;
 					} else {
 						if (model.viewStatus === 'running') {
+							var _char = A2(author$project$Main$removeChar, model, string);
+							var missed = ((string === 'Control') || ((string === 'Shift') || ((string === 'Alt') || ((string === 'Meta') || ((string === 'Shift') || (string === 'Meta')))))) ? false : (_Utils_eq(model.targetChar, _char) ? true : false);
 							var $temp$msg = author$project$Main$End,
 								$temp$model = _Utils_update(
 								model,
-								{
-									targetChar: A2(author$project$Main$removeChar, model, string)
-								});
+								{missed: missed, targetChar: _char});
 							msg = $temp$msg;
 							model = $temp$model;
 							continue update;
@@ -6290,7 +6307,15 @@ var author$project$Main$update = F2(
 								model = $temp$model;
 								continue update;
 							} else {
-								return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								if (model.viewStatus === 'config') {
+									var $temp$msg = author$project$Main$ChangeConfig(string),
+										$temp$model = model;
+									msg = $temp$msg;
+									model = $temp$model;
+									continue update;
+								} else {
+									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								}
 							}
 						}
 					}
@@ -6319,6 +6344,113 @@ var author$project$Main$update = F2(
 							continue update;
 						} else {
 							return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+						}
+					}
+				case 'ChangeConfig':
+					var string = msg.a;
+					if ((string === 'Backspace') || ((string === 'Delete') || (string === '-'))) {
+						if (model.selected === 'charLength') {
+							return _Utils_Tuple2(
+								_Utils_update(
+									model,
+									{charLength: model.charLength - 1}),
+								elm$core$Platform$Cmd$none);
+						} else {
+							if (model.selected === 'isNum') {
+								var $temp$msg = author$project$Main$CheckIsNum(!model.isNum),
+									$temp$model = model;
+								msg = $temp$msg;
+								model = $temp$model;
+								continue update;
+							} else {
+								if (model.selected === 'isAlpha') {
+									var $temp$msg = author$project$Main$CheckIsAlpha(!model.isAlpha),
+										$temp$model = model;
+									msg = $temp$msg;
+									model = $temp$model;
+									continue update;
+								} else {
+									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								}
+							}
+						}
+					} else {
+						if ((string === 'Enter') || (string === '+')) {
+							if (model.selected === 'charLength') {
+								return _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{charLength: model.charLength + 1}),
+									elm$core$Platform$Cmd$none);
+							} else {
+								if (model.selected === 'isNum') {
+									var $temp$msg = author$project$Main$CheckIsNum(!model.isNum),
+										$temp$model = model;
+									msg = $temp$msg;
+									model = $temp$model;
+									continue update;
+								} else {
+									if (model.selected === 'isAlpha') {
+										var $temp$msg = author$project$Main$CheckIsAlpha(!model.isAlpha),
+											$temp$model = model;
+										msg = $temp$msg;
+										model = $temp$model;
+										continue update;
+									} else {
+										if (model.selected === 'start') {
+											var $temp$msg = author$project$Main$Start,
+												$temp$model = model;
+											msg = $temp$msg;
+											model = $temp$model;
+											continue update;
+										} else {
+											return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+										}
+									}
+								}
+							}
+						} else {
+							if ((string === 'ArrowDown') || (string === 'j')) {
+								return (model.selected === 'charLength') ? _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{selected: 'isNum'}),
+									elm$core$Platform$Cmd$none) : ((model.selected === 'isNum') ? _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{selected: 'isAlpha'}),
+									elm$core$Platform$Cmd$none) : ((model.selected === 'isAlpha') ? _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{selected: 'start'}),
+									elm$core$Platform$Cmd$none) : ((model.selected === 'start') ? _Utils_Tuple2(
+									_Utils_update(
+										model,
+										{selected: 'charLength'}),
+									elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none))));
+							} else {
+								if ((string === 'ArrowUp') || (string === 'k')) {
+									return (model.selected === 'charLength') ? _Utils_Tuple2(
+										_Utils_update(
+											model,
+											{selected: 'start'}),
+										elm$core$Platform$Cmd$none) : ((model.selected === 'isNum') ? _Utils_Tuple2(
+										_Utils_update(
+											model,
+											{selected: 'charLength'}),
+										elm$core$Platform$Cmd$none) : ((model.selected === 'isAlpha') ? _Utils_Tuple2(
+										_Utils_update(
+											model,
+											{selected: 'isNum'}),
+										elm$core$Platform$Cmd$none) : ((model.selected === 'start') ? _Utils_Tuple2(
+										_Utils_update(
+											model,
+											{selected: 'isAlpha'}),
+										elm$core$Platform$Cmd$none) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none))));
+								} else {
+									return _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
+								}
+							}
 						}
 					}
 				case 'ChangeAtMulti':
@@ -6409,6 +6541,12 @@ var author$project$Main$update = F2(
 										elm$core$Array$length(model.charSet))));
 						}
 					}
+				case 'MissReset':
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{missed: false}),
+						elm$core$Platform$Cmd$none);
 				case 'Spend':
 					return _Utils_Tuple2(
 						author$project$Single$spend(model),
@@ -6419,7 +6557,7 @@ var author$project$Main$update = F2(
 						A2(author$project$Single$setCharLength, s, model),
 						elm$core$Platform$Cmd$none);
 				case 'Start':
-					return _Utils_Tuple2(
+					return (model.isNum || model.isAlpha) ? _Utils_Tuple2(
 						author$project$Single$start(model),
 						A2(
 							elm$random$Random$generate,
@@ -6427,7 +6565,7 @@ var author$project$Main$update = F2(
 							A2(
 								elm$random$Random$int,
 								0,
-								elm$core$Array$length(model.charSet))));
+								elm$core$Array$length(model.charSet)))) : _Utils_Tuple2(model, elm$core$Platform$Cmd$none);
 				case 'End':
 					return _Utils_Tuple2(
 						author$project$Single$end(model),
@@ -6669,17 +6807,10 @@ var author$project$Main$update = F2(
 			}
 		}
 	});
-var author$project$Main$CheckIsAlpha = function (a) {
-	return {$: 'CheckIsAlpha', a: a};
-};
-var author$project$Main$CheckIsNum = function (a) {
-	return {$: 'CheckIsNum', a: a};
-};
 var author$project$Main$Retry = {$: 'Retry'};
 var author$project$Main$SetCharLength = function (a) {
 	return {$: 'SetCharLength', a: a};
 };
-var author$project$Main$Start = {$: 'Start'};
 var author$project$Main$toggleClass = F2(
 	function (status, className) {
 		return _Utils_eq(status, className) ? 'show' : 'hide';
@@ -6744,6 +6875,18 @@ var author$project$Main$makeShareUrl = function (model) {
 	return 'https://twitter.com/intent/tweet?text=' + elm$url$Url$percentEncode(
 		elm$core$String$fromInt(model.charLength) + ('文字を' + (author$project$Main$timeStringFromMs(model.spend) + '秒で打ち込んだ | https://typingame.netlify.com')));
 };
+var elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			elm$json$Json$Encode$string(string));
+	});
+var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
+var author$project$Main$selecredMenuClass = F2(
+	function (m, s) {
+		return _Utils_eq(m.selected, s) ? elm$html$Html$Attributes$class('menu selected') : elm$html$Html$Attributes$class('menu');
+	});
 var elm$core$Basics$neq = _Utils_notEqual;
 var elm$html$Html$a = _VirtualDom_node('a');
 var elm$html$Html$div = _VirtualDom_node('div');
@@ -6772,14 +6915,6 @@ var elm$html$Html$Attributes$boolProperty = F2(
 			elm$json$Json$Encode$bool(bool));
 	});
 var elm$html$Html$Attributes$checked = elm$html$Html$Attributes$boolProperty('checked');
-var elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			elm$json$Json$Encode$string(string));
-	});
-var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
 var elm$html$Html$Attributes$hidden = elm$html$Html$Attributes$boolProperty('hidden');
 var elm$html$Html$Attributes$href = function (url) {
 	return A2(
@@ -6964,82 +7099,124 @@ var author$project$Main$view = function (model) {
 								elm$html$Html$text('set char length')
 							])),
 						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('char-length nes-input is-dark'),
-								elm$html$Html$Attributes$type_('number'),
-								elm$html$Html$Attributes$max('9999'),
-								elm$html$Html$Attributes$min('1'),
-								elm$html$Html$Attributes$placeholder('1 - 9999'),
-								elm$html$Html$Attributes$value(
-								elm$core$String$fromInt(model.charLength)),
-								elm$html$Html$Events$onInput(author$project$Main$SetCharLength)
-							]),
-						_List_Nil),
-						A2(
-						elm$html$Html$input,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('nes-btn'),
-								elm$html$Html$Attributes$type_('button'),
-								elm$html$Html$Attributes$value('Go!'),
-								elm$html$Html$Events$onClick(author$project$Main$Start)
-							]),
-						_List_Nil),
-						A2(
 						elm$html$Html$div,
 						_List_fromArray(
 							[
-								A2(elm$html$Html$Attributes$style, 'display', 'block')
+								A2(elm$html$Html$Attributes$style, 'display', 'block'),
+								elm$html$Html$Attributes$class('menuWrap')
 							]),
 						_List_fromArray(
 							[
 								A2(
-								elm$html$Html$label,
-								_List_Nil,
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										A2(elm$html$Html$Attributes$style, 'display', 'block'),
+										A2(author$project$Main$selecredMenuClass, model, 'charLength')
+									]),
 								_List_fromArray(
 									[
 										A2(
 										elm$html$Html$input,
 										_List_fromArray(
 											[
-												elm$html$Html$Attributes$type_('checkbox'),
-												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
-												elm$html$Html$Attributes$checked(model.isNum),
-												elm$html$Html$Events$onCheck(author$project$Main$CheckIsNum)
+												elm$html$Html$Attributes$class('menu char-length nes-input is-dark'),
+												elm$html$Html$Attributes$type_('number'),
+												elm$html$Html$Attributes$max('9999'),
+												elm$html$Html$Attributes$min('1'),
+												elm$html$Html$Attributes$placeholder('1 - 9999'),
+												elm$html$Html$Attributes$value(
+												elm$core$String$fromInt(model.charLength)),
+												elm$html$Html$Events$onInput(author$project$Main$SetCharLength)
 											]),
-										_List_Nil),
+										_List_Nil)
+									])),
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										A2(elm$html$Html$Attributes$style, 'display', 'block'),
+										A2(author$project$Main$selecredMenuClass, model, 'isNum')
+									]),
+								_List_fromArray(
+									[
 										A2(
-										elm$html$Html$span,
+										elm$html$Html$label,
 										_List_Nil,
 										_List_fromArray(
 											[
-												elm$html$Html$text('Num ')
+												A2(
+												elm$html$Html$input,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$type_('checkbox'),
+														elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+														elm$html$Html$Attributes$checked(model.isNum),
+														elm$html$Html$Events$onCheck(author$project$Main$CheckIsNum)
+													]),
+												_List_Nil),
+												A2(
+												elm$html$Html$span,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Num\u00a0\u00a0')
+													]))
 											]))
 									])),
 								A2(
-								elm$html$Html$label,
-								_List_Nil,
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										A2(elm$html$Html$Attributes$style, 'display', 'block'),
+										A2(author$project$Main$selecredMenuClass, model, 'isAlpha')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										elm$html$Html$label,
+										_List_Nil,
+										_List_fromArray(
+											[
+												A2(
+												elm$html$Html$input,
+												_List_fromArray(
+													[
+														elm$html$Html$Attributes$type_('checkbox'),
+														elm$html$Html$Attributes$class('nes-checkbox is-dark'),
+														elm$html$Html$Attributes$checked(model.isAlpha),
+														elm$html$Html$Events$onCheck(author$project$Main$CheckIsAlpha)
+													]),
+												_List_Nil),
+												A2(
+												elm$html$Html$span,
+												_List_Nil,
+												_List_fromArray(
+													[
+														elm$html$Html$text('Alpha')
+													]))
+											]))
+									])),
+								A2(
+								elm$html$Html$div,
+								_List_fromArray(
+									[
+										A2(elm$html$Html$Attributes$style, 'display', 'block'),
+										elm$html$Html$Attributes$class('start'),
+										A2(author$project$Main$selecredMenuClass, model, 'start')
+									]),
 								_List_fromArray(
 									[
 										A2(
 										elm$html$Html$input,
 										_List_fromArray(
 											[
-												elm$html$Html$Attributes$type_('checkbox'),
-												elm$html$Html$Attributes$class('nes-checkbox is-dark'),
-												elm$html$Html$Attributes$checked(model.isAlpha),
-												elm$html$Html$Events$onCheck(author$project$Main$CheckIsAlpha)
+												elm$html$Html$Attributes$class('nes-btn start'),
+												elm$html$Html$Attributes$type_('button'),
+												elm$html$Html$Attributes$value('Start!'),
+												elm$html$Html$Events$onClick(author$project$Main$Start)
 											]),
-										_List_Nil),
-										A2(
-										elm$html$Html$span,
-										_List_Nil,
-										_List_fromArray(
-											[
-												elm$html$Html$text(' Alpha')
-											]))
+										_List_Nil)
 									]))
 							]))
 					])),
@@ -7047,9 +7224,10 @@ var author$project$Main$view = function (model) {
 				elm$html$Html$div,
 				_List_fromArray(
 					[
-						elm$html$Html$Attributes$class('inner'),
 						elm$html$Html$Attributes$class(
-						A2(author$project$Main$toggleClass, model.viewStatus, 'running'))
+						A2(author$project$Main$toggleClass, model.viewStatus, 'running')),
+						elm$html$Html$Attributes$class(
+						model.missed ? 'inner missed' : 'inner')
 					]),
 				_List_fromArray(
 					[

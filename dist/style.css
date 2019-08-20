@@ -43,10 +43,6 @@ body {
 	width: 200px;
 	background: #212529;
 	text-align: right;
-	/*color: white;
-	border: 0;
-	text-decoration: none;
-	border-bottom: 1px solid;*/
 }
 
 .char-length:focus {
@@ -156,3 +152,79 @@ i {
 a.twitter {
 	margin-top: 14px;
 }
+
+.menu {
+	height: 35px;
+	line-height: 30px;
+}
+
+.menu:nth-child(2) {
+	margin-top: 10px;
+}
+
+.start.menu {
+	margin-top: 12px;
+}
+.menu.selected:before {
+	content: "*";
+	display: block;
+	position: absolute;
+	padding-left: 160px;
+}
+
+.nes-btn.start {
+	height: 35px;
+	padding: 0;
+	background: #212529;
+	color: #fff;
+	top: -8px;
+}
+
+.menu.char-length.nes-input.is-dark {
+	height: 25px;
+	width: 150px;
+	margin-left: 60px;
+	background: #212529;
+	text-align: right;
+	padding: 0;
+}
+
+
+
+
+
+div.inner.show.missed {
+	-webkit-animation: anime1 0.2s steps(10, start) 1 alternate;
+}
+
+@-webkit-keyframes anime1 {
+	0% {
+		position: relative;
+		top: 38px;
+		left: 23px;
+	}
+	20% {
+		position: relative;
+		top: 40px;
+		left: 25px;
+	}
+	40% {
+		position: relative;
+		top: 38px;
+		left: -20px;
+	}
+	60% {
+		position: relative;
+		top: -32px;
+		left: 23px;
+	}
+	80% {
+		position: relative;
+		top: -32px;
+		left: -20px;
+	}
+	100% {
+		position: none;
+	}
+}
+

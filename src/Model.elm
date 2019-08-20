@@ -20,4 +20,6 @@ type alias MainModel =
     , pid : Maybe String
     , message : String
     , action : String
+    , selected : String
+    , missed : Bool
     }

@@ -67,6 +67,8 @@ init _ =
       , pid = Nothing
       , message = "You are vimmer, you are vimmer!"
       , action = ""
+      , selected = "charLength"
+      , missed = False
       }
     , closeConnection ()
     )
@@ -79,6 +81,7 @@ init _ =
 type Msg
     = Change String
     | ChangeAtTitle String
+    | ChangeConfig String
     | ChangeAtMulti String
       -- title
     | CheckSingleMode Bool
@@ -88,6 +91,7 @@ type Msg
     | CheckIsNum Bool
     | CheckIsAlpha Bool
     | SetChar Int
+    | MissReset Time.Posix
     | Spend Time.Posix
     | SetCharLength String
     | Start
@@ -121,13 +125,31 @@ update msg model =
                 update (ChangeAtTitle string) model
 
             else if model.viewStatus == "running" then
+                let
+                    char =
+                        removeChar model string
+
+                    missed =
+                        if string == "Control" || string == "Shift" || string == "Alt" || string == "Meta" || string == "Shift" || string == "Meta" then
+                            False
+
+                        else if model.targetChar == char then
+                            True
+
+                        else
+                            False
+                in
                 update End
                     { model
-                        | targetChar = removeChar model string
+                        | missed = missed
+                        , targetChar = char
                     }
 
             else if model.viewStatus == "ready" || model.viewStatus == "battle" then
                 update (ChangeAtMulti string) model
+
+            else if model.viewStatus == "config" then
+                update (ChangeConfig string) model
 
             else
                 ( model, Cmd.none )
@@ -142,6 +164,71 @@ update msg model =
 
             else if string == "Enter" then
                 update (SelectMode model.mode) model
+
+            else
+                ( model, Cmd.none )
+
+        ChangeConfig string ->
+            if string == "Backspace" || string == "Delete" || string == "-" then
+                if model.selected == "charLength" then
+                    ( { model | charLength = model.charLength - 1 }, Cmd.none )
+
+                else if model.selected == "isNum" then
+                    update (CheckIsNum (not model.isNum)) model
+
+                else if model.selected == "isAlpha" then
+                    update (CheckIsAlpha (not model.isAlpha)) model
+
+                else
+                    ( model, Cmd.none )
+
+            else if string == "Enter" || string == "+" then
+                if model.selected == "charLength" then
+                    ( { model | charLength = model.charLength + 1 }, Cmd.none )
+
+                else if model.selected == "isNum" then
+                    update (CheckIsNum (not model.isNum)) model
+
+                else if model.selected == "isAlpha" then
+                    update (CheckIsAlpha (not model.isAlpha)) model
+
+                else if model.selected == "start" then
+                    update Start model
+
+                else
+                    ( model, Cmd.none )
+
+            else if string == "ArrowDown" || string == "j" then
+                if model.selected == "charLength" then
+                    ( { model | selected = "isNum" }, Cmd.none )
+
+                else if model.selected == "isNum" then
+                    ( { model | selected = "isAlpha" }, Cmd.none )
+
+                else if model.selected == "isAlpha" then
+                    ( { model | selected = "start" }, Cmd.none )
+
+                else if model.selected == "start" then
+                    ( { model | selected = "charLength" }, Cmd.none )
+
+                else
+                    ( model, Cmd.none )
+
+            else if string == "ArrowUp" || string == "k" then
+                if model.selected == "charLength" then
+                    ( { model | selected = "start" }, Cmd.none )
+
+                else if model.selected == "isNum" then
+                    ( { model | selected = "charLength" }, Cmd.none )
+
+                else if model.selected == "isAlpha" then
+                    ( { model | selected = "isNum" }, Cmd.none )
+
+                else if model.selected == "start" then
+                    ( { model | selected = "isAlpha" }, Cmd.none )
+
+                else
+                    ( model, Cmd.none )
 
             else
                 ( model, Cmd.none )
@@ -207,6 +294,9 @@ update msg model =
                     _ ->
                         ( model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
 
+        MissReset _ ->
+            ( { model | missed = False }, Cmd.none )
+
         Spend _ ->
             ( Single.spend model, Cmd.none )
 
@@ -214,7 +304,11 @@ update msg model =
             ( Single.setCharLength s model, Cmd.none )
 
         Start ->
-            ( Single.start model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+            if model.isNum || model.isAlpha then
+                ( Single.start model, Random.generate SetChar (Random.int 0 <| Array.length model.charSet) )
+
+            else
+                ( model, Cmd.none )
 
         End ->
             ( Single.end model, Cmd.none )
@@ -479,20 +573,36 @@ view model =
         -- single
         , div [ class "inner", class <| toggleClass model.viewStatus "config" ]
             [ h1 [] [ text "set char length" ]
-            , input [ class "char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
-            , input [ class "nes-btn", type_ "button", value "Go!", onClick Start ] []
-            , div [ style "display" "block" ]
-                [ label []
-                    [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isNum, onCheck CheckIsNum ] []
-                    , span [] [ text "Num " ]
+            , div [ style "display" "block", class "menuWrap" ]
+                [ div [ style "display" "block", selecredMenuClass model "charLength" ]
+                    [ input [ class "menu char-length nes-input is-dark", type_ "number", Html.Attributes.max "9999", Html.Attributes.min "1", placeholder "1 - 9999", value <| String.fromInt model.charLength, onInput SetCharLength ] []
                     ]
-                , label []
-                    [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isAlpha, onCheck CheckIsAlpha ] []
-                    , span [] [ text " Alpha" ]
+                , div [ style "display" "block", selecredMenuClass model "isNum" ]
+                    [ label []
+                        [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isNum, onCheck CheckIsNum ] []
+                        , span [] [ text "Num\u{00A0}\u{00A0}" ]
+                        ]
+                    ]
+                , div [ style "display" "block", selecredMenuClass model "isAlpha" ]
+                    [ label []
+                        [ input [ type_ "checkbox", class "nes-checkbox is-dark", checked model.isAlpha, onCheck CheckIsAlpha ] []
+                        , span [] [ text "Alpha" ]
+                        ]
+                    ]
+                , div [ style "display" "block", class "start", selecredMenuClass model "start" ]
+                    [ input [ class "nes-btn start", type_ "button", value "Start!", onClick Start ] []
                     ]
                 ]
             ]
-        , div [ class "inner", class <| toggleClass model.viewStatus "running" ]
+        , div
+            [ class <| toggleClass model.viewStatus "running"
+            , class <|
+                if model.missed then
+                    "inner missed"
+
+                else
+                    "inner"
+            ]
             [ h1 [] [ text "type, type, type" ]
 
             -- , span [ class "target-char" ] [ text model.targetChar ]
@@ -556,6 +666,15 @@ battleOrEnd s =
         "hide"
 
 
+selecredMenuClass : Model -> String -> Attribute msg
+selecredMenuClass m s =
+    if m.selected == s then
+        class "menu selected"
+
+    else
+        class "menu"
+
+
 
 -- SUBSCRIPTIONS
 
@@ -564,6 +683,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ onKeyDown (Decode.map Change (Decode.field "key" Decode.string))
+        , Time.every 400 MissReset
         , Time.every 10 Spend
         , Time.every 10 MultiSpend
         , Time.every 1000 NowMatching
