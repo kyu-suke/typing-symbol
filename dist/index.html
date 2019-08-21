@@ -41,7 +41,7 @@
         }
       }, 3000)
     } catch (err) {
-      console.error(err);
+      //console.error(err);
     }
     ws.onmessage = function (msg) {
       app.ports.receiveMessage.send(msg.data)
